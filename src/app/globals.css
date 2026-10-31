@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Malayalam:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --kerala-green:   #1B6B3A;
+  --kerala-light:   #2E8B57;
+  --kerala-gold:    #E8A020;
+  --kerala-red:     #D94F2B;
+  --kerala-dark:    #0A1628;
+  --kerala-surface: #0F2744;
+  --kerala-card:    #162035;
+  --kerala-white:   #F9F5EE;
+  --kerala-muted:   #94A3B8;
+  --kerala-border:  #1E3A5F;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-kerala-dark text-kerala-white font-inter antialiased;
+    background-image:
+      radial-gradient(ellipse at top left,  #1B6B3A18 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, #E8A02010 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background-color: #1B6B3A55;
+    color: #F9F5EE;
+  }
+
+  ::-webkit-scrollbar       { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0A1628; }
+  ::-webkit-scrollbar-thumb { background: #1B6B3A; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2E8B57; }
+}
+
+@layer components {
+  /* Glass card */
+  .glass-card {
+    @apply bg-kerala-card/80 border border-kerala-border backdrop-blur-md rounded-2xl;
+    box-shadow: 0 4px 24px #00000044, inset 0 1px 0 #ffffff08;
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300 cursor-pointer;
+  }
+  .glass-card-hover:hover {
+    @apply border-kerala-green/50;
+    box-shadow: 0 8px 32px #00000055, 0 0 20px #1B6B3A22, inset 0 1px 0 #ffffff0f;
+    transform: translateY(-2px);
+  }
+
+  /* Kerala gradient text */
+  .kerala-text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #2E8B57, #E8A020);
+  }
+
+  .gold-text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #E8A020, #F4C842);
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply bg-kerala-green hover:bg-kerala-light text-white font-medium px-5 py-2.5 rounded-xl transition-all duration-200 cursor-pointer;
+    box-shadow: 0 0 16px #1B6B3A44;
+  }
+  .btn-primary:hover {
+    box-shadow: 0 0 24px #1B6B3A66;
+    transform: translateY(-1px);
+  }
+
+  .btn-gold {
+    @apply bg-kerala-gold hover:bg-yellow-500 text-kerala-dark font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 cursor-pointer;
+    box-shadow: 0 0 16px #E8A02044;
+  }
+  .btn-gold:hover {
+    box-shadow: 0 0 24px #E8A02066;
+    transform: translateY(-1px);
+  }
+
+  /* Live indicator */
+  .live-dot {
+    @apply relative inline-flex w-2 h-2 rounded-full bg-emerald-400;
+  }
+  .live-dot::before {
+    content: '';
+    @apply absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75;
+  }
+
+  /* Section heading */
+  .section-heading {
+    @apply font-newsreader text-2xl md:text-3xl font-semibold text-kerala-white;
+  }
+
+  /* District card region colours */
+  .region-south   { --region-color: #D94F2B; }
+  .region-central { --region-color: #1B6B3A; }
+  .region-north   { --region-color: #E8A020; }
+
+  /* Ticker */
+  .ticker-wrap {
+    @apply overflow-hidden whitespace-nowrap;
+  }
+  .ticker-content {
+    @apply inline-block animate-ticker;
+  }
+
+  /* Backwater ripple SVG background */
+  .ripple-bg {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='20'%3E%3Cellipse cx='50' cy='10' rx='48' ry='4' fill='none' stroke='%231B6B3A' stroke-opacity='0.06' stroke-width='1'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-size: 100px 20px;
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+}
