@@ -73,31 +73,52 @@ export default function KeralaAI() {
     },
   ]);
 
-  const send = () => {
-    if (!input.trim()) return;
-    const query = input.toLowerCase();
+  const [loading, setLoading] = useState(false);
 
-    const matched = KNOWLEDGE_BASE.find((k) =>
-      k.keywords.some((w) => query.includes(w))
-    );
+  const keywordMatch = (q: string) =>
+    KNOWLEDGE_BASE.find((k) => k.keywords.some((w) => q.toLowerCase().includes(w)));
 
-    let reply =
-      "Great question! Kerala has 14 diverse districts ranging from the Malabar coast to the Western Ghats. You can explore our dedicated sections or ask specifically about places like Kazhakootam, Munnar, or Fort Kochi. 🌴";
-    let linkText: string | undefined;
-    let linkHref: string | undefined;
+  const send = async () => {
+    const text = input.trim();
+    if (!text || loading) return;
 
-    if (matched) {
-      reply = matched.reply;
-      linkText = matched.linkText;
-      linkHref = matched.linkHref;
+    const matched = keywordMatch(text);
+    const history = [...msgs, { role: "user" as const, text }];
+    setMsgs(history);
+    setInput("");
+    setLoading(true);
+
+    let reply: string | null = null;
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          // skip the canned greeting; send only the real conversation
+          messages: history.slice(1).map((m) => ({
+            role: m.role === "ai" ? "assistant" : "user",
+            content: m.text,
+          })),
+        }),
+      });
+      if (res.ok) reply = (await res.json()).reply ?? null;
+    } catch {
+      /* fall through to keyword fallback */
+    }
+
+    // Fallback: AI unavailable / rate-limited -> built-in keyword answers
+    const fromAi = reply !== null;
+    if (!fromAi) {
+      reply =
+        matched?.reply ??
+        "I can't reach the AI assistant right now. You can explore the districts, tourism and civic sections, or try again in a minute. 🌴";
     }
 
     setMsgs((m) => [
       ...m,
-      { role: "user", text: input },
-      { role: "ai", text: reply, linkText, linkHref },
+      { role: "ai", text: reply!, linkText: matched?.linkText, linkHref: matched?.linkHref },
     ]);
-    setInput("");
+    setLoading(false);
   };
 
   return (
@@ -118,9 +139,9 @@ export default function KeralaAI() {
               <span className="live-dot" />
               <div>
                 <div className="text-sm font-bold text-kerala-white flex items-center gap-1.5">
-                  KeralaGPT <span className="text-[10px] px-1.5 py-0.2 rounded bg-kerala-gold/20 text-kerala-gold">AI v2.0</span>
+                  KeralaGPT <span className="text-[10px] px-1.5 py-0.2 rounded bg-kerala-gold/20 text-kerala-gold">AI</span>
                 </div>
-                <div className="text-[10px] text-kerala-muted">Real-time Kerala Knowledge Assistant</div>
+                <div className="text-[10px] text-kerala-muted">Kerala guide · no live data, verify details</div>
               </div>
             </div>
             <button
@@ -142,7 +163,7 @@ export default function KeralaAI() {
                     : "bg-kerala-green/40 border border-kerala-green/50 text-white ml-8"
                 }`}
               >
-                <div>{m.text}</div>
+                <div className="whitespace-pre-wrap">{m.text}</div>
                 {m.linkHref && m.linkText && (
                   <div className="mt-2 pt-2 border-t border-white/10">
                     <Link
@@ -156,6 +177,9 @@ export default function KeralaAI() {
                 )}
               </div>
             ))}
+            {loading && (
+              <div className="text-xs text-kerala-muted p-3" aria-live="polite">Thinking…</div>
+            )}
           </div>
 
           {/* Input Bar */}
@@ -163,12 +187,14 @@ export default function KeralaAI() {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              maxLength={500}
               onKeyDown={(e) => e.key === "Enter" && send()}
               placeholder="Ask about Kazhakootam, trips, food, civic issues..."
               className="flex-1 bg-kerala-card border border-kerala-border rounded-xl px-3 py-2 text-xs md:text-sm text-kerala-white outline-none focus:border-kerala-green"
             />
             <button
               onClick={send}
+              disabled={loading}
               className="btn-primary text-xs md:text-sm px-4 py-2 font-semibold"
             >
               Ask

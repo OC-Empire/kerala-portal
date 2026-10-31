@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Malayalam:wght@400;500;600;700&display=swap');
 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -20,10 +21,11 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    @apply font-sans;
   }
 
   body {
-    @apply bg-kerala-dark text-kerala-white font-inter antialiased;
+    @apply font-inter antialiased bg-background text-foreground;
     background-image:
       radial-gradient(ellipse at top left,  #1B6B3A18 0%, transparent 50%),
       radial-gradient(ellipse at bottom right, #E8A02010 0%, transparent 50%);
@@ -39,6 +41,31 @@
   ::-webkit-scrollbar-track { background: #0A1628; }
   ::-webkit-scrollbar-thumb { background: #1B6B3A; border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: #2E8B57; }
+  :root {
+    --background: #0A1628;
+    --foreground: #F9F5EE;
+    --card: #162035;
+    --card-foreground: #F9F5EE;
+    --popover: #162035;
+    --popover-foreground: #F9F5EE;
+    --primary: #1B6B3A;
+    --primary-foreground: #F9F5EE;
+    --secondary: #0F2744;
+    --secondary-foreground: #F9F5EE;
+    --muted: #1E3A5F;
+    --muted-foreground: #94A3B8;
+    --accent: #E8A020;
+    --accent-foreground: #0A1628;
+    --destructive: #D94F2B;
+    --destructive-foreground: #F9F5EE;
+    --border: #1E3A5F;
+    --input: #1E3A5F;
+    --ring: #1B6B3A;
+    --radius: 0.625rem;
+  }
+  * {
+    @apply border-border;
+  }
 }
 
 @layer components {

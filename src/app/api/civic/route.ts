@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getDb, schema } from "@/db";
 import { fallbackStore } from "@/lib/db";
-import { eq, sql } from "drizzle-orm";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { validateCivicInput } from "@/lib/civic-validation";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -35,49 +36,56 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const ip = clientIp(request);
+  const rl = rateLimit(`civic-post:${ip}`, 5, 10 * 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many reports. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter) } }
+    );
+  }
+
+  let body: unknown;
   try {
-    const body = await request.json();
-    const { title, description, district, subLocation, category } = body;
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
 
-    if (!title || !description || !district) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
+  const parsed = validateCivicInput(body);
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
+  }
 
-    const newIssue = {
-      id: `iss-${Date.now()}`,
-      title,
-      description,
-      district,
-      subLocation: subLocation || "General Area",
-      category: category || "roads",
-      status: "open",
-      upvotes: 1,
-      createdAt: new Date().toISOString(),
-    };
+  const newIssue = {
+    id: `iss-${crypto.randomUUID()}`,
+    ...parsed.value,
+    status: "open",
+    upvotes: 1,
+    createdAt: new Date().toISOString(),
+  };
 
-    const db = getDb();
-    if (db) {
-      try {
-        await db.insert(schema.civicIssuesTable).values({
-          id: newIssue.id,
-          title: newIssue.title,
-          description: newIssue.description,
-          district: newIssue.district,
-          subLocation: newIssue.subLocation,
-          category: newIssue.category,
-          status: newIssue.status,
-          upvotes: 1,
-        });
-      } catch (err) {
-        console.warn("Neon insert error, appending to memory fallback:", err);
-        fallbackStore.issues.unshift(newIssue);
-      }
-    } else {
-      fallbackStore.issues.unshift(newIssue);
-    }
-
+  const db = getDb();
+  if (!db) {
+    // No database configured (local dev): keep in memory
+    fallbackStore.issues.unshift(newIssue);
     return NextResponse.json({ success: true, issue: newIssue }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: "Invalid request payload" }, { status: 500 });
+  }
+
+  try {
+    await db.insert(schema.civicIssuesTable).values({
+      id: newIssue.id,
+      title: newIssue.title,
+      description: newIssue.description,
+      district: newIssue.district,
+      subLocation: newIssue.subLocation,
+      category: newIssue.category,
+      status: newIssue.status,
+      upvotes: 1,
+    });
+    return NextResponse.json({ success: true, issue: newIssue }, { status: 201 });
+  } catch (err) {
+    console.error("civic insert failed:", err);
+    return NextResponse.json({ error: "Could not save your report. Please try again." }, { status: 503 });
   }
 }

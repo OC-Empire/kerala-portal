@@ -1,0 +1,54 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "news": "News",
+    "districts": "Districts",
+    "tourism": "Tourism",
+    "food": "Food & Culture",
+    "civic": "Civic Issues",
+    "government": "Govt Services",
+    "nri": "NRI Corner",
+    "openMenu": "Open menu",
+    "close": "Close",
+    "language": "Language"
+  },
+  "footer": {
+    "copyright": "© 2026 Kerala Portal · God's Own Country"
+  },
+  "home": {
+    "title": "Kerala Portal",
+    "badge": "Kerala's Hyperlocal Digital Nervous System · 14 Districts",
+    "intro": "From <b>Kazhakootam & Technopark</b> in the south to the misty peaks of <b>Munnar</b> and the heritage shores of <b>Malabar</b> — civic reporting, hyperlocal news, cultural guides, and travel info in one place.",
+    "exploreDistricts": "🗺️ Explore 14 Districts & Hubs",
+    "reportIssue": "📢 Report Civic Issue",
+    "travelPlanner": "✈️ Travel Planner",
+    "breakingAlert": "Breaking Alert",
+    "stats": {
+      "population": "Population",
+      "populationSub": "Statewide",
+      "districts": "Districts",
+      "districtsSub": "Administrative",
+      "hubs": "Prime Sub-Hubs",
+      "hubsValue": "{count} Towns",
+      "hubsSub": "Hyperlocal Layer",
+      "literacy": "Literacy Rate",
+      "literacySub": "#1 in India",
+      "diaspora": "Diaspora / NRI",
+      "diasporaSub": "Global Network",
+      "tourism": "Annual Tourism",
+      "tourismSub": "God's Own Country"
+    },
+    "newsHeading": "Hyperlocal News Wire",
+    "viewAllNews": "View All Bulletins →",
+    "source": "Source: {source}",
+    "hubsHeading": "Prime Hubs",
+    "allDistricts": "All 14 →",
+    "civicCardTitle": "Citizen Grievances",
+    "civicCardBody": "Report civic problems in your area and upvote the ones that matter to you.",
+    "civicCardCta": "Open Action Board →"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong"
+  }
+}

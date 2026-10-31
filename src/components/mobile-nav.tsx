@@ -4,16 +4,18 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_LINKS } from "@/lib/constants";
+import { useTranslations } from "next-intl";
 
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const t = useTranslations("nav");
   return (
     <>
       <button
         onClick={() => setOpen(true)}
         className="md:hidden text-kerala-white text-xl px-2"
-        aria-label="Open menu"
+        aria-label={t("openMenu")}
       >
         ☰
       </button>
@@ -24,9 +26,9 @@ export default function MobileNav() {
             <button
               onClick={() => setOpen(false)}
               className="text-kerala-muted mb-6"
-              aria-label="Close menu"
+              aria-label={t("close")}
             >
-              ✕ Close
+              ✕ {t("close")}
             </button>
             <nav className="flex flex-col gap-1">
               {NAV_LINKS.map((l) => {
@@ -43,7 +45,7 @@ export default function MobileNav() {
                     }`}
                   >
                     <span className="mr-2">{l.icon}</span>
-                    {l.label}
+                    {t(l.key)}
                   </Link>
                 );
               })}

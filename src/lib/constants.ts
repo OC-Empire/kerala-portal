@@ -16,14 +16,14 @@ export const KERALA_COLORS = {
 } as const;
 
 export const NAV_LINKS = [
-  { href: "/", label: "Dashboard", icon: "🏠" },
-  { href: "/news", label: "News", icon: "📰" },
-  { href: "/districts", label: "Districts", icon: "🗺️" },
-  { href: "/tourism", label: "Tourism", icon: "✈️" },
-  { href: "/food", label: "Food & Culture", icon: "🍽️" },
-  { href: "/civic", label: "Civic Issues", icon: "🔧" },
-  { href: "/government", label: "Govt Services", icon: "🏛️" },
-  { href: "/nri", label: "NRI Corner", icon: "🌍" },
+  { href: "/", key: "dashboard", label: "Dashboard", icon: "🏠" },
+  { href: "/news", key: "news", label: "News", icon: "📰" },
+  { href: "/districts", key: "districts", label: "Districts", icon: "🗺️" },
+  { href: "/tourism", key: "tourism", label: "Tourism", icon: "✈️" },
+  { href: "/food", key: "food", label: "Food & Culture", icon: "🍽️" },
+  { href: "/civic", key: "civic", label: "Civic Issues", icon: "🔧" },
+  { href: "/government", key: "government", label: "Govt Services", icon: "🏛️" },
+  { href: "/nri", key: "nri", label: "NRI Corner", icon: "🌍" },
 ] as const;
 
 export const WEATHER_DISTRICTS = [

@@ -4,9 +4,47 @@ import { useState } from "react";
 import { DISTRICTS } from "@/lib/districts";
 import Link from "next/link";
 
+type AiPlan = {
+  title: string;
+  summary: string;
+  bestTime: string;
+  days: { day: number; title: string; route: string; stops: string[]; food: string; tip: string }[];
+};
+
 export default function TourismPlanner() {
   const [days, setDays] = useState(3);
   const [theme, setTheme] = useState("all");
+
+  // AI generator state
+  const [aiDays, setAiDays] = useState(3);
+  const [aiTheme, setAiTheme] = useState("mixed");
+  const [aiStart, setAiStart] = useState("");
+  const [aiNotes, setAiNotes] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiPlan, setAiPlan] = useState<AiPlan | null>(null);
+
+  const generate = async () => {
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const res = await fetch("/api/itinerary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ days: aiDays, theme: aiTheme, start: aiStart, notes: aiNotes }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.plan) {
+        setAiError(data.error ?? "Couldn't generate a plan. Please try again.");
+        return;
+      }
+      setAiPlan(data.plan);
+    } catch {
+      setAiError("Network error. Please try again.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const itineraries = [
     {
@@ -76,7 +114,7 @@ export default function TourismPlanner() {
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xl">✈️</span>
             <h2 className="font-newsreader text-2xl md:text-3xl font-bold text-kerala-white">
-              AI Kerala Itinerary Engine
+              Kerala Itinerary Planner
             </h2>
           </div>
           <p className="text-sm text-kerala-muted">
@@ -115,6 +153,68 @@ export default function TourismPlanner() {
         </div>
       </div>
 
+      {/* AI generator */}
+      <div className="bg-kerala-dark/70 border border-kerala-gold/40 rounded-2xl p-5 space-y-4">
+        <div>
+          <h3 className="font-newsreader text-xl font-bold text-kerala-white">✨ Generate a custom plan with AI</h3>
+          <p className="text-xs text-kerala-muted mt-1">
+            AI-generated suggestions. It has no live data, so check timings, prices and bookings with official sources.
+          </p>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <select value={aiDays} onChange={(e) => setAiDays(Number(e.target.value))} aria-label="Days"
+            className="bg-kerala-dark border border-kerala-border rounded-xl px-3 py-2 text-xs text-kerala-white outline-none focus:border-kerala-gold">
+            {[1, 2, 3, 4, 5, 6, 7].map((n) => <option key={n} value={n}>{n} day{n > 1 ? "s" : ""}</option>)}
+          </select>
+          <select value={aiTheme} onChange={(e) => setAiTheme(e.target.value)} aria-label="Theme"
+            className="bg-kerala-dark border border-kerala-border rounded-xl px-3 py-2 text-xs text-kerala-white outline-none focus:border-kerala-gold">
+            <option value="mixed">🌴 A bit of everything</option>
+            <option value="coastal">🏖️ Coastal & Cliffs</option>
+            <option value="backwaters">🛶 Backwaters</option>
+            <option value="hills">⛰️ Hills & Tea</option>
+            <option value="wildlife">🐘 Wildlife</option>
+            <option value="heritage">🔥 Heritage & Culture</option>
+            <option value="food">🍛 Food trail</option>
+          </select>
+          <select value={aiStart} onChange={(e) => setAiStart(e.target.value)} aria-label="Starting district"
+            className="bg-kerala-dark border border-kerala-border rounded-xl px-3 py-2 text-xs text-kerala-white outline-none focus:border-kerala-gold">
+            <option value="">Start anywhere</option>
+            {DISTRICTS.map((d) => <option key={d.slug} value={d.slug}>{d.name}</option>)}
+          </select>
+          <button onClick={generate} disabled={aiLoading} className="btn-gold text-xs px-4 py-2 font-semibold disabled:opacity-60">
+            {aiLoading ? "Planning…" : "Generate plan"}
+          </button>
+        </div>
+        <input value={aiNotes} onChange={(e) => setAiNotes(e.target.value)} maxLength={200}
+          placeholder="Optional: travelling with kids, vegetarian, low budget, avoid long drives…"
+          className="w-full bg-kerala-dark border border-kerala-border rounded-xl px-3 py-2 text-xs text-kerala-white outline-none focus:border-kerala-gold" />
+        {aiError && <p role="alert" className="text-xs text-rose-400">{aiError}</p>}
+
+        {aiPlan && (
+          <div className="space-y-3 pt-2">
+            <div>
+              <h4 className="font-newsreader text-lg font-bold text-kerala-white">{aiPlan.title}</h4>
+              <p className="text-xs text-kerala-muted mt-1">{aiPlan.summary}</p>
+              {aiPlan.bestTime && <p className="text-xs text-kerala-gold mt-1">Best time: {aiPlan.bestTime}</p>}
+            </div>
+            <div className="grid md:grid-cols-2 gap-3">
+              {aiPlan.days.map((d) => (
+                <div key={d.day} className="border border-kerala-border/70 rounded-xl p-4 space-y-1.5">
+                  <div className="text-sm font-bold text-kerala-white">Day {d.day}: {d.title}</div>
+                  {d.route && <div className="text-[11px] text-kerala-gold">{d.route}</div>}
+                  <ul className="text-xs text-kerala-muted space-y-1">
+                    {d.stops.map((st, i) => <li key={i} className="flex gap-2"><span className="text-kerala-light">✓</span><span>{st}</span></li>)}
+                  </ul>
+                  {d.food && <div className="text-xs text-kerala-muted">🍽️ {d.food}</div>}
+                  {d.tip && <div className="text-xs text-kerala-muted">💡 {d.tip}</div>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <h3 className="font-newsreader text-lg font-bold text-kerala-white pt-2">Curated routes</h3>
       <div className="grid md:grid-cols-2 gap-4">
         {filtered.map((it) => (
           <div

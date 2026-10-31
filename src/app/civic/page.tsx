@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DISTRICTS } from "@/lib/districts";
 
 interface Issue {
@@ -25,58 +25,23 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 export default function CivicPage() {
-  const [issues, setIssues] = useState<Issue[]>([
-    {
-      id: "iss-1",
-      title: "NH-66 Kazhakootam-Technopark Waterlogging & Traffic Jam",
-      description: "Service roads submerged under 1 foot of water after flash rain. Technopark commuters stranded in 45-minute bottlenecks.",
-      district: "thiruvananthapuram",
-      subLocation: "Kazhakootam / Technopark",
-      category: "roads",
-      status: "in-progress",
-      upvotes: 142,
-    },
-    {
-      id: "iss-2",
-      title: "Drinking Water Pipeline Deficit in Attipra Ward",
-      description: "Severe 10 MLD supply-demand gap. Tanker trucks unable to navigate inner residential lanes.",
-      district: "thiruvananthapuram",
-      subLocation: "Attipra / Kulathoor",
-      category: "water",
-      status: "open",
-      upvotes: 98,
-    },
-    {
-      id: "iss-3",
-      title: "Fort Kochi Sea Walkway Streetlights Broken",
-      description: "Tourist safety risk at night between Mahatma Gandhi beach promenade and Chinese Fishing Nets.",
-      district: "ernakulam",
-      subLocation: "Fort Kochi",
-      category: "electricity",
-      status: "resolved",
-      upvotes: 76,
-    },
-    {
-      id: "iss-4",
-      title: "Punnamada Finishing Point Canal Debris",
-      description: "Accumulation of floating weeds & plastic after houseboat departures. Needs immediate harvesters.",
-      district: "alappuzha",
-      subLocation: "Punnamada / Kuttanad",
-      category: "sanitation",
-      status: "open",
-      upvotes: 115,
-    },
-    {
-      id: "iss-5",
-      title: "Munnar Gap Road Monsoon Rockfall Sensors",
-      description: "High vulnerability zone during heavy rainfall. Demand for active early warning signages.",
-      district: "idukki",
-      subLocation: "Munnar Gap Road",
-      category: "safety",
-      status: "in-progress",
-      upvotes: 210,
-    },
-  ]);
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/civic")
+      .then((r) => {
+        if (!r.ok) throw new Error(String(r.status));
+        return r.json();
+      })
+      .then((d) => { if (!cancelled) setIssues(d.issues ?? []); })
+      .catch(() => { if (!cancelled) setLoadError(true); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const [selectedDistrict, setSelectedDistrict] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -99,9 +64,13 @@ export default function CivicPage() {
     );
 
     try {
-      await fetch(`/api/civic/${id}/upvote`, { method: "POST" });
-    } catch (e) {
-      console.warn("Upvote offline synced locally");
+      const res = await fetch(`/api/civic/${id}/upvote`, { method: "POST" });
+      // 409 = already voted from this browser: keep the "voted" state but undo the optimistic bump
+      if (!res.ok) throw new Error(String(res.status));
+    } catch {
+      setIssues((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, upvotes: Math.max(0, item.upvotes - 1) } : item))
+      );
     }
   };
 
@@ -110,42 +79,34 @@ export default function CivicPage() {
     if (!formTitle.trim() || !formDesc.trim()) return;
 
     setIsSubmitting(true);
-    const newIssue: Issue = {
-      id: `iss-${Date.now()}`,
-      title: formTitle,
-      description: formDesc,
-      district: formDistrict,
-      subLocation: formSubLoc.trim() || "Local Ward",
-      category: formCat,
-      status: "open",
-      upvotes: 1,
-    };
-
+    setFormError(null);
     try {
       const res = await fetch("/api/civic", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newIssue),
+        body: JSON.stringify({
+          title: formTitle,
+          description: formDesc,
+          district: formDistrict,
+          subLocation: formSubLoc,
+          category: formCat,
+        }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.issue) {
-          setIssues([data.issue, ...issues]);
-        } else {
-          setIssues([newIssue, ...issues]);
-        }
-      } else {
-        setIssues([newIssue, ...issues]);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.issue) {
+        setFormError(data.error ?? "Could not submit your report. Please try again.");
+        return;
       }
+      setIssues((prev) => [data.issue, ...prev]);
+      setShowModal(false);
+      setFormTitle("");
+      setFormDesc("");
+      setFormSubLoc("");
     } catch {
-      setIssues([newIssue, ...issues]);
+      setFormError("Network error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
-    setShowModal(false);
-    setFormTitle("");
-    setFormDesc("");
-    setFormSubLoc("");
   };
 
   const filtered = issues.filter((i) => {
@@ -217,13 +178,18 @@ export default function CivicPage() {
         <div className="flex items-end">
           <div className="bg-kerala-card/60 border border-kerala-border/60 rounded-xl px-4 py-2 w-full flex items-center justify-between text-xs text-kerala-muted">
             <span>Active Issues: <strong className="text-kerala-white">{filtered.length}</strong></span>
-            <span>Resolved Today: <strong className="text-emerald-400">18</strong></span>
+            <span>Resolved: <strong className="text-emerald-400">{issues.filter((i) => i.status === "resolved").length}</strong></span>
           </div>
         </div>
       </div>
 
       {/* Issue List */}
       <div className="space-y-4">
+        {loading && <p className="text-sm text-kerala-muted">Loading issues…</p>}
+        {loadError && <p role="alert" className="text-sm text-rose-400">Couldn't load issues. Please refresh.</p>}
+        {!loading && !loadError && filtered.length === 0 && (
+          <p className="text-sm text-kerala-muted">No issues match these filters.</p>
+        )}
         {filtered.map((item) => {
           const hasVoted = !!votedIds[item.id];
           return (
@@ -306,6 +272,8 @@ export default function CivicPage() {
                 <label className="text-xs text-kerala-muted block mb-1">Issue Title</label>
                 <input
                   required
+                  minLength={5}
+                  maxLength={120}
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
                   placeholder="e.g., Streetlight blackout near Technopark Phase 3 gate"
@@ -359,6 +327,8 @@ export default function CivicPage() {
                 <label className="text-xs text-kerala-muted block mb-1">Description & Details</label>
                 <textarea
                   required
+                  minLength={10}
+                  maxLength={1000}
                   rows={4}
                   value={formDesc}
                   onChange={(e) => setFormDesc(e.target.value)}
@@ -367,6 +337,9 @@ export default function CivicPage() {
                 />
               </div>
 
+              {formError && (
+                <p role="alert" className="text-xs text-rose-400">{formError}</p>
+              )}
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
