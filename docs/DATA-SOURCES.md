@@ -21,9 +21,16 @@ Added the same day for districts that had few or no schools and libraries.
 - 10 further schools and 5 libraries are **web-sourced**: a fact or two taken from the cited page (founding year, location), written in our own words. These are weaker than the Wikipedia-backed rows. Several rest on a single page, and some cited pages are Wikipedia mirrors or blogs. Each row's `source_url` shows where the claim came from.
 - Coordinates were looked up on OpenStreetMap. A match was kept only when it was the right institution; where the best match was a different school or road, the coordinates were left blank.
 
+## Third pass: food and culture (`data/places-kerala-foodculture.csv`, 100 entries)
+Categories `food` ("Food & flavours") and `culture` ("Arts, crafts & traditions").
+- **Food (53):** 38 dishes hand-picked from district food guides (Kerala Tourism, Onmanorama and similar), in our own wording with the source linked. The rest are Wikipedia-backed geographical-indication foods (e.g. Palakkadan Matta rice, Marayoor jaggery, Wayanad Jeerakasala rice, Kuttiattoor mango).
+- **Culture (47):** art forms, folk rituals, crafts and temple festivals from Wikipedia's Kerala culture categories (e.g. Kanyarkali, Poothan and Thira, Kuthampully saree, Aranmula kannadi, Yakshagana), assigned to a district through Wikidata or the article text.
+- Festivals that already exist as events (Thrissur Pooram, Attukal Pongala, etc.) are kept in `events`, not repeated here.
+- On the site, researched entries show first; profile names from the original district data are shown after them only if they aren't already covered.
+- Not district-specific dishes (sadya, appam, puttu) are only listed where a source ties them to the district.
+
 ## Known gaps (add via CSV, see DATA-GUIDE.md)
-- Libraries: Pathanamthitta, Idukki, Wayanad and Kasaragod still have none. No notable library could be confirmed for them.
-- Schools: every district now has at least 2, but Wayanad, Kasaragod, Malappuram and Thrissur are the thinnest.
-- Kasaragod has few entries overall.
-- Everything is `verified=false`. Nothing was confirmed by a human, and hours/fees are not included.
-- Some places have no coordinates (no reliable source), so they show no "Directions" link.
+- Libraries: Pathanamthitta, Idukki, Wayanad and Kasaragod still have none.
+- Culture: Idukki has one entry; Pathanamthitta, Wayanad and Kottayam two each. Food is thinnest in Pathanamthitta (1) and Kasaragod (2).
+- Descriptions of Wikipedia-backed rows are the article's first sentences and can be dry.
+- Everything is `verified=false`. Nothing was confirmed by a human.

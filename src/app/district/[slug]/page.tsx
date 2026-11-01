@@ -11,6 +11,7 @@ import PlacesBrowser from "@/components/places-browser";
 import EventCard from "@/components/event-card";
 import NewsImage from "@/components/news-image";
 import { timeAgo } from "@/lib/utils";
+import { uncovered } from "@/lib/dedupe";
 
 export default async function DistrictPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ cat?: string }> }) {
   const { slug } = await params;
@@ -30,14 +31,19 @@ export default async function DistrictPage({ params, searchParams }: { params: P
   const news = allNews.filter((n) => n.districtSlug === slug).slice(0, 4);
   const issues = civic.topByDistrict[slug] ?? [];
   const hasEvents = upcoming.length + undated.length > 0;
+  // researched food/culture entries live in the Places browser; keep the profile lists only for names they don't cover
+  const extraFood = uncovered(d.signatureFood, places.filter((p) => p.category === "food").map((p) => p.name));
+  const extraCulture = uncovered(d.culturalIcons, places.filter((p) => p.category === "culture").map((p) => p.name));
+  const foodMore = places.some((p) => p.category === "food");
+  const cultureMore = places.some((p) => p.category === "culture");
 
   const sections = [
     { id: "overview", label: t("navOverview"), show: true },
     { id: "places", label: t("navPlaces"), show: places.length > 0 },
     { id: "events", label: t("navEvents"), show: hasEvents },
     { id: "news", label: t("navNews"), show: news.length > 0 },
-    { id: "food", label: t("navFood"), show: true },
-    { id: "culture", label: t("navCulture"), show: true },
+    { id: "food", label: t("navFood"), show: extraFood.length > 0 },
+    { id: "culture", label: t("navCulture"), show: extraCulture.length > 0 },
     { id: "civic", label: t("navCivic"), show: true },
   ].filter((x) => x.show);
 
@@ -251,37 +257,43 @@ export default async function DistrictPage({ params, searchParams }: { params: P
       </section>
 
       {/* Food & Cultural Heritage */}
+      {(extraFood.length > 0 || extraCulture.length > 0) && (
       <div className="grid md:grid-cols-2 gap-6">
+        {extraFood.length > 0 && (
         <section id="food" className="glass-card p-6 space-y-4 scroll-mt-32">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🍲</span>
-            <h2 className="section-heading text-xl">Signature Cuisine</h2>
+            <h2 className="section-heading text-xl">{foodMore ? t("moreFood") : "Signature Cuisine"}</h2>
           </div>
           <p className="text-xs text-kerala-muted">Authentic flavors indigenous to {d.name} kitchens & street stalls.</p>
           <ul className="space-y-2.5">
-            {d.signatureFood.map((f) => (
+            {extraFood.map((f) => (
               <li key={f} className="bg-kerala-dark/60 border border-kerala-border/60 rounded-xl p-3 text-sm text-kerala-white flex items-center gap-2">
                 <span className="text-kerala-gold">✦</span> {f}
               </li>
             ))}
           </ul>
         </section>
+        )}
 
+        {extraCulture.length > 0 && (
         <section id="culture" className="glass-card p-6 space-y-4 scroll-mt-32">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🎭</span>
-            <h2 className="section-heading text-xl">Cultural Icons & Heritage</h2>
+            <h2 className="section-heading text-xl">{cultureMore ? t("moreCulture") : "Cultural Icons & Heritage"}</h2>
           </div>
           <p className="text-xs text-kerala-muted">Ritual arts, folklore, and historical movements born in this soil.</p>
           <ul className="space-y-2.5">
-            {d.culturalIcons.map((c) => (
+            {extraCulture.map((c) => (
               <li key={c} className="bg-kerala-dark/60 border border-kerala-border/60 rounded-xl p-3 text-sm text-kerala-white flex items-center gap-2">
                 <span className="text-kerala-light">✦</span> {c}
               </li>
             ))}
           </ul>
         </section>
+        )}
       </div>
+      )}
     </div>
   );
 }

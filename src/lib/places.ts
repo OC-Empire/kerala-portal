@@ -8,6 +8,8 @@ export const PLACE_CATEGORIES = [
   { key: "zoo", label: "Zoos & wildlife", icon: "🦁" },
   { key: "museum", label: "Museums & heritage", icon: "🖼️" },
   { key: "sports_venue", label: "Stadiums & sports venues", icon: "🏟️" },
+  { key: "food", label: "Food & flavours", icon: "🍲" },
+  { key: "culture", label: "Arts, crafts & traditions", icon: "🎭" },
   { key: "nature", label: "Beaches, waterfalls & nature", icon: "🌊" },
   { key: "hidden_gem", label: "Hidden gems", icon: "💎" },
   { key: "other", label: "Other places", icon: "📍" },

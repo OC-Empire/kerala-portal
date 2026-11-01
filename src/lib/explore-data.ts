@@ -10,6 +10,7 @@ export interface ExplorePlace {
   name: string;
   malayalamName: string | null;
   address: string | null;
+  description: string | null;
   lat: number | null;
   lng: number | null;
   website: string | null;
@@ -48,7 +49,7 @@ async function load(): Promise<ExploreData> {
       d.counts[p.category] = (d.counts[p.category] ?? 0) + 1;
       const list = (d.items[p.category] ??= []);
       if (list.length < PER_CATEGORY) {
-        list.push({ id: p.id, category: p.category, name: p.name, malayalamName: p.malayalamName, address: p.address, lat: p.lat, lng: p.lng, website: p.website });
+        list.push({ id: p.id, category: p.category, name: p.name, malayalamName: p.malayalamName, address: p.address, description: p.description ? (p.description.length > 140 ? p.description.slice(0, 137).replace(/\s+\S*$/, "") + "…" : p.description) : null, lat: p.lat, lng: p.lng, website: p.website });
       }
     }
     const events = await db.select().from(schema.eventsTable).orderBy(asc(schema.eventsTable.startsAt), asc(schema.eventsTable.title));

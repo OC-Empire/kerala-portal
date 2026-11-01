@@ -7,6 +7,7 @@ import { DISTRICTS } from "@/lib/districts";
 import { KERALA_GEO, KERALA_VIEWBOX } from "@/lib/kerala-geo";
 import { PLACE_CATEGORIES, eventMeta, sportMeta } from "@/lib/places";
 import type { ExploreData } from "@/lib/explore-data";
+import { uncovered } from "@/lib/dedupe";
 
 // Short on-map labels for the long names
 const SHORT: Record<string, string> = { thiruvananthapuram: "Trivandrum", pathanamthitta: "Pathanamthitta" };
@@ -63,12 +64,20 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
   const districtEvents = explore.events
     .filter((e) => !e.districtSlug || e.districtSlug === focus)
     .sort((a, b) => Number(b.districtSlug === focus) - Number(a.districtSlug === focus));
+  // food & culture: researched entries first, then profile names they don't already cover
+  const dbFood = ex?.items.food ?? [];
+  const dbCulture = ex?.items.culture ?? [];
+  const extraFood = uncovered(d.signatureFood, dbFood.map((p) => p.name));
+  const extraCulture = uncovered(d.culturalIcons, dbCulture.map((p) => p.name));
   const exCats = [
-    ...PLACE_CATEGORIES.filter((c) => (ex?.counts[c.key] ?? 0) > 0).map((c) => ({ key: c.key, label: c.label, icon: c.icon, n: ex!.counts[c.key] })),
+    ...PLACE_CATEGORIES.filter((c) => (ex?.counts[c.key] ?? 0) > 0).map((c) => ({
+      key: c.key, label: c.label, icon: c.icon,
+      n: ex!.counts[c.key] + (c.key === "food" ? extraFood.length : c.key === "culture" ? extraCulture.length : 0),
+    })),
     ...(districtEvents.length ? [{ key: "events", label: te("events"), icon: "🎆", n: districtEvents.length }] : []),
-    // food & culture come from the district profile, so they are always there
-    { key: "food", label: te("food"), icon: "🍲", n: d.signatureFood.length },
-    { key: "culture", label: te("culture"), icon: "🎭", n: d.culturalIcons.length },
+    // districts with no researched entries still show their profile lists
+    ...(dbFood.length === 0 && extraFood.length > 0 ? [{ key: "food", label: te("food"), icon: "🍲", n: extraFood.length }] : []),
+    ...(dbCulture.length === 0 && extraCulture.length > 0 ? [{ key: "culture", label: te("culture"), icon: "🎭", n: extraCulture.length }] : []),
   ];
   const [exCat, setExCat] = useState<string>("");
   const activeCat = exCats.find((c) => c.key === exCat)?.key ?? exCats[0]?.key;
@@ -280,12 +289,12 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
               <h3 className="section-heading text-xl">{te("title", { name: d.name })}</h3>
               <p className="text-xs text-kerala-muted mt-0.5">{te("hint")}</p>
             </div>
-            {(activeCat === "food" || activeCat === "culture") && (
+            {(activeCat === "food" || activeCat === "culture") && (activeCat === "food" ? dbFood : dbCulture).length === 0 && (
               <Link href={`/district/${d.slug}#${activeCat}`} className="text-xs text-kerala-gold hover:underline font-semibold">
-                {te("seeAll", { count: activeCat === "food" ? d.signatureFood.length : d.culturalIcons.length, name: d.name })} →
+                {te("seeAll", { count: activeCat === "food" ? extraFood.length : extraCulture.length, name: d.name })} →
               </Link>
             )}
-            {activeCat && activeCat !== "events" && activeCat !== "food" && activeCat !== "culture" && (
+            {activeCat && activeCat !== "events" && !((activeCat === "food" || activeCat === "culture") && (activeCat === "food" ? dbFood : dbCulture).length === 0) && (
               <Link href={`/district/${d.slug}?cat=${activeCat}#places`} className="text-xs text-kerala-gold hover:underline font-semibold">
                 {te("seeAll", { count: ex!.counts[activeCat], name: d.name })} →
               </Link>
@@ -310,14 +319,7 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {activeCat === "food" || activeCat === "culture"
-              ? (activeCat === "food" ? d.signatureFood : d.culturalIcons).map((name) => (
-                  <Link key={name} href={`/district/${d.slug}#${activeCat}`} className="glass-card-hover p-4 flex items-center gap-3">
-                    <span className="text-2xl" aria-hidden>{activeCat === "food" ? "🍲" : "🎭"}</span>
-                    <span className="font-newsreader text-base font-bold text-kerala-white leading-snug">{name}</span>
-                  </Link>
-                ))
-              : activeCat === "events"
+            {activeCat === "events"
               ? districtEvents.slice(0, 6).map((e) => {
                   const m = e.category === "sports" ? sportMeta(e.sport) : eventMeta(e.category);
                   return (
@@ -328,17 +330,25 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
                     </Link>
                   );
                 })
-              : (ex?.items[activeCat ?? ""] ?? []).map((p) => {
+              : [...(ex?.items[activeCat ?? ""] ?? []).map((p) => {
                   const cat = PLACE_CATEGORIES.find((c) => c.key === p.category);
                   return (
                     <Link key={p.id} href={`/district/${d.slug}?cat=${p.category}#places`} className="glass-card-hover p-4 block">
                       <div className="text-[11px] text-emerald-300 font-semibold">{cat?.icon} {cat?.label}</div>
                       <div className="font-newsreader text-base font-bold text-kerala-white mt-1 leading-snug line-clamp-2">{locale === "ml" && p.malayalamName ? p.malayalamName : p.name}</div>
                       {(locale === "ml" ? p.name : p.malayalamName) && <div className="text-xs text-kerala-gold">{locale === "ml" ? p.name : p.malayalamName}</div>}
-                      {p.address && <div className="text-xs text-kerala-muted mt-1 line-clamp-1">📍 {p.address}</div>}
+                      {p.description && <div className="text-xs text-kerala-muted mt-1 line-clamp-2">{p.description}</div>}
+                      {!p.description && p.address && <div className="text-xs text-kerala-muted mt-1 line-clamp-1">📍 {p.address}</div>}
                     </Link>
                   );
-                })}
+                }),
+                  // profile names the researched entries don't cover (name-only cards)
+                  ...((activeCat === "food" ? extraFood : activeCat === "culture" ? extraCulture : []).map((name) => (
+                    <Link key={"x-" + name} href={`/district/${d.slug}${(activeCat === "food" ? dbFood : dbCulture).length ? `?cat=${activeCat}#places` : `#${activeCat}`}`} className="glass-card-hover p-4 flex items-center gap-3">
+                      <span className="text-2xl" aria-hidden>{activeCat === "food" ? "🍲" : "🎭"}</span>
+                      <span className="font-newsreader text-base font-bold text-kerala-white leading-snug">{name}</span>
+                    </Link>
+                  )))].slice(0, 9)}
           </div>
         </div>
       )}
