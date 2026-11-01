@@ -20,7 +20,7 @@ First time only (creates the two tables, additive and safe to re-run): `npm run 
 |---|---|---|
 | `id` | no | Leave blank. Generated from district + name so re-imports update the same row. |
 | `district_slug` | yes | One of: thiruvananthapuram, kollam, pathanamthitta, alappuzha, kottayam, idukki, ernakulam, thrissur, palakkad, malappuram, kozhikode, wayanad, kannur, kasaragod |
-| `category` | yes | school, college, library, park, zoo, museum, sports_venue, hidden_gem, other |
+| `category` | yes | school, college, library, park, zoo, museum, sports_venue, nature, hidden_gem, other |
 | `name` | yes | English name |
 | `malayalam_name` | no | Shown instead of the English name when the site is in Malayalam |
 | `description` | no | 1-3 sentences. Keep it factual. |

@@ -21,12 +21,13 @@ export interface PlaceView {
   fee: string | null;
   imageUrl: string | null;
   verified: boolean;
+  sourceUrl?: string | null;
 }
 
-export default function PlacesBrowser({ places }: { places: PlaceView[] }) {
+export default function PlacesBrowser({ places, initialCat }: { places: PlaceView[]; initialCat?: string }) {
   const t = useTranslations("district");
   const locale = useLocale();
-  const [cat, setCat] = useState<string>("all");
+  const [cat, setCat] = useState<string>(initialCat && places.some((p) => p.category === initialCat) ? initialCat : "all");
 
   const counts = useMemo(() => {
     const m = new Map<string, number>();
@@ -55,6 +56,7 @@ export default function PlacesBrowser({ places }: { places: PlaceView[] }) {
           const m = placeMeta(p.category);
           const site = safeHref(p.website);
           const img = safeHref(p.imageUrl);
+          const src = safeHref(p.sourceUrl);
           const maps = p.lat != null && p.lng != null ? `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}` : null;
           const title = locale === "ml" && p.malayalamName ? p.malayalamName : p.name;
           const sub = locale === "ml" ? (p.malayalamName ? p.name : null) : p.malayalamName;
@@ -77,6 +79,7 @@ export default function PlacesBrowser({ places }: { places: PlaceView[] }) {
                 <div className="flex flex-wrap gap-3 pt-2 mt-auto text-xs">
                   {maps && <a href={maps} target="_blank" rel="noopener noreferrer" className="text-kerala-light hover:underline font-semibold">{t("directions")} ↗</a>}
                   {site && <a href={site} target="_blank" rel="noopener noreferrer" className="text-kerala-light hover:underline font-semibold">{t("website")} ↗</a>}
+                  {src && <a href={src} target="_blank" rel="noopener noreferrer" className="text-kerala-muted hover:text-kerala-white hover:underline">{t("source")} ↗</a>}
                   {!p.verified && <span className="text-kerala-muted/80">{t("unverified")}</span>}
                 </div>
               </div>

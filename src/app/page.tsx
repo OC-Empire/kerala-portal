@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { getLiveNews, type Locale } from "@/lib/feeds";
 import { getCivicSummary } from "@/lib/civic-data";
 import { getWeather } from "@/lib/weather";
+import { getExploreData } from "@/lib/explore-data";
 import DistrictMap from "@/components/district-map";
 import LatestNews from "@/components/latest-news";
 import WeatherWidget from "@/components/weather-widget";
@@ -59,7 +60,7 @@ const HUBS = [
 
 export default async function Home() {
   const locale: Locale = (await cookies()).get("NEXT_LOCALE")?.value === "ml" ? "ml" : "en";
-  const [news, civic, weather] = await Promise.all([getLiveNews(locale), getCivicSummary(), getWeather()]);
+  const [news, civic, weather, explore] = await Promise.all([getLiveNews(locale), getCivicSummary(), getWeather(), getExploreData()]);
   const t = await getTranslations("home");
   const k = await getTranslations("kpi");
   const ticker = news.slice(0, 4);
@@ -139,7 +140,7 @@ export default async function Home() {
       </section>
 
       {/* Map */}
-      <DistrictMap counts={counts} headlines={headlines} civicCounts={civic.openByDistrict} civicTop={civic.topByDistrict} />
+      <DistrictMap counts={counts} headlines={headlines} civicCounts={civic.openByDistrict} civicTop={civic.topByDistrict} explore={explore} />
 
       {/* Live news */}
       <LatestNews items={news} />

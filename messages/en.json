@@ -164,6 +164,16 @@
     "allNews": "All news",
     "civicHeading": "Civic issues in {name}",
     "noIssues": "No open civic issues here right now. 🎉",
-    "reportIssue": "Report an issue"
+    "reportIssue": "Report an issue",
+    "sourceNote": "Place details are compiled from Wikipedia (CC BY-SA), Wikidata and OpenStreetMap contributors, plus public tourism pages linked on each card. They are not individually verified, so confirm hours, fees and access before you go.",
+    "source": "Source"
+  },
+  "explore": {
+    "title": "Explore more in {name}",
+    "hint": "Schools, colleges, libraries, parks, hidden gems and events.",
+    "events": "Events",
+    "seeAll": "See all {count} in {name}",
+    "allEvents": "All events",
+    "dateTbc": "Date to be announced"
   }
 }

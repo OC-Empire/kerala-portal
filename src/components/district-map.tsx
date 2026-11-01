@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { DISTRICTS } from "@/lib/districts";
 import { KERALA_GEO, KERALA_VIEWBOX } from "@/lib/kerala-geo";
+import { PLACE_CATEGORIES, eventMeta, sportMeta } from "@/lib/places";
+import type { ExploreData } from "@/lib/explore-data";
 
 // Short on-map labels for the long names
 const SHORT: Record<string, string> = { thiruvananthapuram: "Trivandrum", pathanamthitta: "Pathanamthitta" };
@@ -22,6 +24,8 @@ interface Props {
   civicCounts: Record<string, number>;
   /** most-upvoted open issues per district slug */
   civicTop: Record<string, MapIssue[]>;
+  /** curated places & events for the "Explore more" block */
+  explore: ExploreData;
 }
 
 type Mode = "stories" | "civic";
@@ -30,9 +34,11 @@ const THEME: Record<Mode, { rgb: string; badge: string; badgeText: string }> = {
   civic: { rgb: "217,79,43", badge: "#F9F5EE", badgeText: "#7a2410" },
 };
 
-export default function DistrictMap({ counts: storyCounts, headlines, civicCounts, civicTop }: Props) {
+export default function DistrictMap({ counts: storyCounts, headlines, civicCounts, civicTop, explore }: Props) {
   const t = useTranslations("map");
   const tn = useTranslations("news");
+  const te = useTranslations("explore");
+  const locale = useLocale();
 
   // Default selection: the district with the most live stories (gives the panel content immediately)
   const [mode, setMode] = useState<Mode>("stories");
@@ -50,10 +56,24 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
   const count = counts[focus] ?? 0;
   const list = (headlines[focus] ?? []).slice(0, 4);
   const issues = civicTop[focus] ?? [];
+
+  // "Explore more": categories available for the focused district (+ events)
+  const ex = explore.districts[focus];
+  // this district's own events first, then statewide ones
+  const districtEvents = explore.events
+    .filter((e) => !e.districtSlug || e.districtSlug === focus)
+    .sort((a, b) => Number(b.districtSlug === focus) - Number(a.districtSlug === focus));
+  const exCats = [
+    ...PLACE_CATEGORIES.filter((c) => (ex?.counts[c.key] ?? 0) > 0).map((c) => ({ key: c.key, label: c.label, icon: c.icon, n: ex!.counts[c.key] })),
+    ...(districtEvents.length ? [{ key: "events", label: te("events"), icon: "🎆", n: districtEvents.length }] : []),
+  ];
+  const [exCat, setExCat] = useState<string>("");
+  const activeCat = exCats.find((c) => c.key === exCat)?.key ?? exCats[0]?.key;
   const max = Math.max(1, ...Object.values(counts));
 
-  // draw the focused district last so its outline sits above its neighbours
-  const order = [...DISTRICTS].sort((a, b) => Number(a.slug === focus) - Number(b.slug === focus));
+  // keep the shapes in a fixed DOM order (re-ordering under the cursor can swallow clicks);
+  // the focused outline is drawn as a separate overlay instead
+  const order = DISTRICTS;
 
   return (
     <div className="glass-card p-4 md:p-6 flex flex-col">
@@ -106,7 +126,6 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
               if (!g) return null;
               const n = counts[dist.slug] ?? 0;
               const intensity = n / max;
-              const isFocus = dist.slug === focus;
               const isSel = dist.slug === selected;
               return (
                 <path
@@ -123,14 +142,26 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
                   onFocus={() => setHover(dist.slug)}
                   onBlur={() => setHover(null)}
                   fill={`rgba(${theme.rgb},${(0.18 + 0.7 * intensity).toFixed(2)})`}
-                  stroke={isFocus ? "#E8A020" : "#0A1628"}
-                  strokeWidth={isFocus ? 2.5 : 1.2}
+                  stroke="#0A1628"
+                  strokeWidth={1.2}
                   strokeLinejoin="round"
                   className="cursor-pointer outline-none transition-[fill,stroke-width] duration-200"
-                  style={isFocus ? { filter: "drop-shadow(0 0 7px rgba(232,160,32,.55))" } : undefined}
                 />
               );
             })}
+
+            {/* highlight for the focused district (overlay, never intercepts the pointer) */}
+            {KERALA_GEO[focus] && (
+              <path
+                d={KERALA_GEO[focus].d}
+                fill="none"
+                stroke="#E8A020"
+                strokeWidth={2.5}
+                strokeLinejoin="round"
+                pointerEvents="none"
+                style={{ filter: "drop-shadow(0 0 7px rgba(232,160,32,.55))" }}
+              />
+            )}
 
             {/* labels + story badges (non-interactive) */}
             {DISTRICTS.map((dist) => {
@@ -237,6 +268,65 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
           </div>
         </div>
       </div>
+
+      {/* Explore more: curated places & events for the focused district */}
+      {exCats.length > 0 && (
+        <div className="mt-6 pt-5 border-t border-kerala-border/60 space-y-4" aria-live="polite">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h3 className="section-heading text-xl">{te("title", { name: d.name })}</h3>
+              <p className="text-xs text-kerala-muted mt-0.5">{te("hint")}</p>
+            </div>
+            {activeCat && activeCat !== "events" && (
+              <Link href={`/district/${d.slug}?cat=${activeCat}#places`} className="text-xs text-kerala-gold hover:underline font-semibold">
+                {te("seeAll", { count: ex!.counts[activeCat], name: d.name })} →
+              </Link>
+            )}
+            {activeCat === "events" && (
+              <Link href={`/district/${d.slug}#events`} className="text-xs text-kerala-gold hover:underline font-semibold">{te("allEvents")} →</Link>
+            )}
+          </div>
+
+          <div role="tablist" aria-label={te("title", { name: d.name })} className="flex flex-wrap gap-2">
+            {exCats.map((c) => (
+              <button
+                key={c.key}
+                role="tab"
+                aria-selected={activeCat === c.key}
+                onClick={() => setExCat(c.key)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeCat === c.key ? "bg-kerala-green text-white" : "bg-kerala-card text-kerala-muted hover:text-kerala-white"}`}
+              >
+                {c.icon} {c.label} · {c.n}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {activeCat === "events"
+              ? districtEvents.slice(0, 6).map((e) => {
+                  const m = e.category === "sports" ? sportMeta(e.sport) : eventMeta(e.category);
+                  return (
+                    <Link key={e.id} href={e.category === "sports" ? "/sports" : `/district/${d.slug}#events`} className="glass-card-hover p-4 block">
+                      <div className="text-[11px] text-kerala-gold font-semibold">{m.icon} {m.label}</div>
+                      <div className="font-newsreader text-base font-bold text-kerala-white mt-1 leading-snug">{locale === "ml" && e.malayalamTitle ? e.malayalamTitle : e.title}</div>
+                      <div className="text-xs text-kerala-muted mt-1 line-clamp-2">{e.startsAt ? new Intl.DateTimeFormat(locale === "ml" ? "ml-IN" : "en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", year: "numeric" }).format(new Date(e.startsAt)) : e.dateNote ?? te("dateTbc")}</div>
+                    </Link>
+                  );
+                })
+              : (ex?.items[activeCat ?? ""] ?? []).map((p) => {
+                  const cat = PLACE_CATEGORIES.find((c) => c.key === p.category);
+                  return (
+                    <Link key={p.id} href={`/district/${d.slug}?cat=${p.category}#places`} className="glass-card-hover p-4 block">
+                      <div className="text-[11px] text-emerald-300 font-semibold">{cat?.icon} {cat?.label}</div>
+                      <div className="font-newsreader text-base font-bold text-kerala-white mt-1 leading-snug line-clamp-2">{locale === "ml" && p.malayalamName ? p.malayalamName : p.name}</div>
+                      {(locale === "ml" ? p.name : p.malayalamName) && <div className="text-xs text-kerala-gold">{locale === "ml" ? p.name : p.malayalamName}</div>}
+                      {p.address && <div className="text-xs text-kerala-muted mt-1 line-clamp-1">📍 {p.address}</div>}
+                    </Link>
+                  );
+                })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

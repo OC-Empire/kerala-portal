@@ -12,8 +12,9 @@ import EventCard from "@/components/event-card";
 import NewsImage from "@/components/news-image";
 import { timeAgo } from "@/lib/utils";
 
-export default async function DistrictPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function DistrictPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ cat?: string }> }) {
   const { slug } = await params;
+  const { cat: initialCat } = await searchParams;
   const d = DISTRICT_BY_SLUG[slug];
   if (!d) notFound();
 
@@ -96,12 +97,14 @@ export default async function DistrictPage({ params }: { params: Promise<{ slug:
             <p className="text-xs md:text-sm text-kerala-muted">{t("placesNote")}</p>
           </div>
           <PlacesBrowser
+            initialCat={initialCat}
             places={places.map((p) => ({
               id: p.id, category: p.category, name: p.name, malayalamName: p.malayalamName, description: p.description,
               address: p.address, lat: p.lat, lng: p.lng, phone: p.phone, website: p.website, hours: p.hours, fee: p.fee,
-              imageUrl: p.imageUrl, verified: p.verified,
+              imageUrl: p.imageUrl, verified: p.verified, sourceUrl: p.sourceUrl,
             }))}
           />
+          <p className="text-[11px] text-kerala-muted">{t("sourceNote")}</p>
         </section>
       )}
 
