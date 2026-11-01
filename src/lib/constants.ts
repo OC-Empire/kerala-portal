@@ -18,7 +18,7 @@ export const KERALA_COLORS = {
 export const NAV_LINKS = [
   { href: "/", key: "dashboard", label: "Dashboard", icon: "🏠" },
   { href: "/news", key: "news", label: "News", icon: "📰" },
-  { href: "/districts", key: "districts", label: "Districts", icon: "🗺️" },
+  { href: "/sports", key: "sports", label: "Sports", icon: "🏆" },
   { href: "/tourism", key: "tourism", label: "Tourism", icon: "✈️" },
   { href: "/food", key: "food", label: "Food & Culture", icon: "🍽️" },
   { href: "/civic", key: "civic", label: "Civic Issues", icon: "🔧" },

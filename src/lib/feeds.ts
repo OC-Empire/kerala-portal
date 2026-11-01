@@ -18,6 +18,10 @@ export interface LiveNewsItem {
   publishedAt: string;   // ISO
   imageUrl?: string;
   url: string;
+  // sports feeds only
+  sport?: "cricket" | "football" | "other";
+  kerala?: boolean;
+  lang?: Locale;
 }
 
 const FEEDS: Record<Locale, { url: string; source: string }[]> = {
@@ -115,7 +119,13 @@ function guessCategory(text: string): NewsCategory {
 }
 
 // ---------- fetch + parse ----------
-function parseFeed(xml: string, source: string, max: number): LiveNewsItem[] {
+interface ParseOpts { sports?: boolean; sport?: "cricket" | "football"; lang?: Locale }
+
+const CRICKET_RE = /cricket|\bipl\b|ranji|bcci|test match|\bodi\b|\bt20|wicket|batter|batsman|bowler|innings|ക്രിക്കറ്റ്|ഐപിഎൽ|വിക്കറ്റ്/i;
+const FOOTBALL_RE = /football|\bisl\b|fifa|\bgoal\b|striker|blasters|premier league|la liga|champions league|santosh trophy|ഫുട്ബോൾ|ഗോൾ|ബ്ലാസ്റ്റേഴ്സ്/i;
+const KERALA_SPORT_RE = /kerala|keralam|kochi|cochin|blasters|thiruvananthapuram|trivandrum|kozhikode|calicut|thrissur|malappuram|kannur|kasaragod|wayanad|palakkad|alappuzha|kottayam|kollam|idukki|pathanamthitta|sanju samson|santosh trophy|കേരള|കൊച്ചി|തിരുവനന്തപുരം|കോഴിക്കോട്|തൃശൂർ|തൃശ്ശൂർ|മലപ്പുറം|കണ്ണൂർ|ബ്ലാസ്റ്റേഴ്സ്|സഞ്ജു/i;
+
+function parseFeed(xml: string, source: string, max: number, opts: ParseOpts = {}): LiveNewsItem[] {
   const out: LiveNewsItem[] = [];
   const blocks = xml.match(/<item[\s>][\s\S]*?<\/item>/g) ?? [];
   for (const b of blocks.slice(0, max)) {
@@ -133,12 +143,20 @@ function parseFeed(xml: string, source: string, max: number): LiveNewsItem[] {
     const imageUrl = imageRaw ? decodeEntities(imageRaw) : undefined;
 
     const text = `${title} ${summary}`;
+    const sportsFields = opts.sports
+      ? {
+          sport: (opts.sport ?? (CRICKET_RE.test(text) ? "cricket" : FOOTBALL_RE.test(text) ? "football" : "other")) as "cricket" | "football" | "other",
+          kerala: KERALA_SPORT_RE.test(text),
+          lang: opts.lang,
+        }
+      : {};
     out.push({
       id: encodeId(url),
       title,
       summary,
-      category: guessCategory(text),
+      category: opts.sports ? "sports" : guessCategory(text),
       ...guessDistrict(text),
+      ...sportsFields,
       source,
       publishedAt: (isNaN(date.getTime()) ? new Date() : date).toISOString(),
       imageUrl: imageUrl && imageUrl.startsWith("https://") ? imageUrl : undefined,
@@ -171,6 +189,59 @@ export async function getLiveNews(locale: Locale = "en", limit = 60): Promise<Li
     for (const it of r.value) {
       const key = it.title.toLowerCase();
       if (seen.has(key)) continue;
+      seen.add(key);
+      items.push(it);
+    }
+  }
+  items.sort((a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt));
+  return items.slice(0, limit);
+}
+
+// ---------- sports ----------
+const SPORTS_FEEDS: Record<Locale, { url: string; source: string; sport?: "cricket" | "football" }[]> = {
+  en: [
+    { url: "https://www.thehindu.com/sport/feeder/default.rss", source: "The Hindu" },
+    { url: "https://www.thehindu.com/sport/cricket/feeder/default.rss", source: "The Hindu", sport: "cricket" },
+    { url: "https://www.thehindu.com/sport/football/feeder/default.rss", source: "The Hindu", sport: "football" },
+    { url: "https://english.mathrubhumi.com/rss/sports", source: "Mathrubhumi English" },
+  ],
+  ml: [{ url: "https://www.asianetnews.com/rss/sports", source: "Asianet News" }],
+};
+
+async function fetchFeedItems(f: { url: string; source: string; sport?: "cricket" | "football" }, lang: Locale, max: number) {
+  const res = await fetch(f.url, {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; KeralaPortal/1.0)" },
+    next: { revalidate: 600 },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) throw new Error(`${f.source} ${res.status}`);
+  return parseFeed(await res.text(), f.source, max, { sports: true, sport: f.sport, lang });
+}
+
+/**
+ * Sports news. For English readers we also pull Kerala-related items from the Malayalam
+ * feed (flagged lang:"ml"), because Kerala-specific English sports coverage is thin.
+ */
+export async function getSportsNews(locale: Locale = "en", limit = 80): Promise<LiveNewsItem[]> {
+  const jobs: Promise<LiveNewsItem[]>[] = SPORTS_FEEDS[locale].map((f) => fetchFeedItems(f, locale, 40));
+  if (locale === "en") {
+    jobs.push(
+      ...SPORTS_FEEDS.ml.map((f) => fetchFeedItems(f, "ml", 60).then((items) => items.filter((i) => i.kerala)))
+    );
+  }
+  const results = await Promise.allSettled(jobs);
+  const seen = new Set<string>();
+  const items: LiveNewsItem[] = [];
+  for (const r of results) {
+    if (r.status === "rejected") { console.error("sports feed failed:", r.reason); continue; }
+    for (const it of r.value) {
+      // The Hindu appears in several feeds: prefer the version with a specific sport
+      const key = it.url;
+      if (seen.has(key)) {
+        const prev = items.find((x) => x.url === key);
+        if (prev && prev.sport === "other" && it.sport !== "other") prev.sport = it.sport;
+        continue;
+      }
       seen.add(key);
       items.push(it);
     }

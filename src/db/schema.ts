@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, jsonb, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, jsonb, boolean, doublePrecision } from "drizzle-orm/pg-core";
 
 export const districtsTable = pgTable("districts", {
   id: text("id").primaryKey(),
@@ -62,3 +62,48 @@ export type DistrictRow = typeof districtsTable.$inferSelect;
 export type SubLocationRow = typeof subLocationsTable.$inferSelect;
 export type NewsRow = typeof newsTable.$inferSelect;
 export type CivicIssueRow = typeof civicIssuesTable.$inferSelect;
+
+// ---- Places & events (curated; imported from CSV via scripts/import-data.mjs) ----
+export const placesTable = pgTable("places", {
+  id: text("id").primaryKey(),
+  districtSlug: text("district_slug").notNull(),
+  category: text("category").notNull(), // see src/lib/places.ts PLACE_CATEGORIES
+  name: text("name").notNull(),
+  malayalamName: text("malayalam_name"),
+  description: text("description"),
+  address: text("address"),
+  lat: doublePrecision("lat"),
+  lng: doublePrecision("lng"),
+  phone: text("phone"),
+  website: text("website"),
+  hours: text("hours"),
+  fee: text("fee"),
+  imageUrl: text("image_url"),
+  sourceUrl: text("source_url"),
+  tags: jsonb("tags").$type<string[]>().notNull().default([]),
+  verified: boolean("verified").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const eventsTable = pgTable("events", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  malayalamTitle: text("malayalam_title"),
+  category: text("category").notNull(), // see src/lib/places.ts EVENT_CATEGORIES
+  sport: text("sport"), // for category=sports
+  districtSlug: text("district_slug"), // null = statewide
+  venue: text("venue"),
+  description: text("description"),
+  startsAt: timestamp("starts_at", { withTimezone: true }), // null = date not fixed yet
+  endsAt: timestamp("ends_at", { withTimezone: true }),
+  dateNote: text("date_note"), // e.g. "Typically held in August"
+  status: text("status").notNull().default("scheduled"), // scheduled | tbc | cancelled
+  website: text("website"),
+  imageUrl: text("image_url"),
+  sourceUrl: text("source_url"),
+  verified: boolean("verified").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type PlaceRow = typeof placesTable.$inferSelect;
+export type EventRow = typeof eventsTable.$inferSelect;

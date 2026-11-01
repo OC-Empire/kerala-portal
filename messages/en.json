@@ -10,7 +10,8 @@
     "nri": "NRI Corner",
     "openMenu": "Open menu",
     "close": "Close",
-    "language": "Language"
+    "language": "Language",
+    "sports": "Sports"
   },
   "footer": {
     "copyright": "© 2026 Kerala Portal · God's Own Country"
@@ -111,11 +112,58 @@
     "news": "News",
     "civic": "Civic issues",
     "searching": "Searching…",
-    "none": "No results for “{q}”"
+    "none": "No results for “{q}”",
+    "events": "Events"
   },
   "brief": {
     "title": "Today in Kerala",
     "badge": "AI brief",
     "note": "Summarised by AI from today's real headlines. Tap a line to read the full story."
+  },
+  "sports": {
+    "title": "Kerala Sports",
+    "subtitle": "Events across the state, the annual sporting calendar, and the latest sports news.",
+    "upcoming": "Upcoming events",
+    "calendar": "Annual calendar",
+    "calendarNote": "Recurring events whose dates aren't fixed yet. Confirm dates with the organisers before planning.",
+    "noEvents": "No sports events have been added yet. Check back soon.",
+    "news": "Sports news",
+    "tab_kerala": "Kerala",
+    "tab_cricket": "Cricket",
+    "tab_football": "Football",
+    "tab_all": "All sports",
+    "newsUnavailable": "Sports news is temporarily unavailable.",
+    "noNewsInTab": "No stories in this tab right now."
+  },
+  "events": {
+    "tbc": "TBC",
+    "dateTbc": "Date to be announced",
+    "statewide": "Statewide",
+    "cancelled": "Cancelled",
+    "officialSite": "Official site",
+    "unverified": "Not yet verified. Confirm details with the organisers.",
+    "upcoming": "Upcoming events",
+    "calendar": "Annual calendar"
+  },
+  "district": {
+    "sections": "District sections",
+    "navOverview": "Overview",
+    "navPlaces": "Places",
+    "navEvents": "Events",
+    "navNews": "News",
+    "navCivic": "Civic issues",
+    "placesHeading": "Places to know in {name}",
+    "placesNote": "Schools, colleges, libraries, parks, zoos, hidden gems and more.",
+    "placesFilter": "Place categories",
+    "all": "All",
+    "directions": "Directions",
+    "website": "Website",
+    "unverified": "Details not yet verified",
+    "eventsHeading": "Events in {name}",
+    "newsHeading": "In the news in {name}",
+    "allNews": "All news",
+    "civicHeading": "Civic issues in {name}",
+    "noIssues": "No open civic issues here right now. 🎉",
+    "reportIssue": "Report an issue"
   }
 }

@@ -9,6 +9,7 @@ type Results = {
   places: { name: string; district: string; slug: string; kind: string }[];
   news: { id: string; title: string; district: string; source: string }[];
   civic: { id: string; title: string; district: string; upvotes: number }[];
+  events: { id: string; title: string; district: string; sport: string | null; category: string }[];
 };
 type Row = { key: string; group: string; title: string; sub: string; href: string };
 
@@ -50,6 +51,7 @@ export default function SearchBox() {
             ...r.districts.map((x) => ({ key: "d" + x.slug, group: t("districts"), title: x.name, sub: x.malayalamName, href: `/district/${x.slug}` })),
             ...r.places.map((x, i) => ({ key: "p" + i + x.name, group: t("places"), title: x.name, sub: x.district, href: `/district/${x.slug}` })),
             ...r.news.map((x) => ({ key: "n" + x.id, group: t("news"), title: x.title, sub: `${x.district} · ${x.source}`, href: `/news/${x.id}` })),
+            ...(r.events ?? []).map((x) => ({ key: "e" + x.id, group: t("events"), title: x.title, sub: x.district, href: x.category === "sports" ? "/sports" : "/news" })),
             ...r.civic.map((x) => ({ key: "c" + x.id, group: t("civic"), title: x.title, sub: `${x.upvotes} ▲`, href: `/civic` })),
           ]);
           setActive(0);

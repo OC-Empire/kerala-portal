@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { CATEGORY_META, type NewsCategory } from "@/lib/news";
 import { DISTRICTS } from "@/lib/districts";
 import { timeAgo } from "@/lib/utils";
-import NewsImage from "@/components/news-image";
+import NewsThumb from "@/components/news-thumb";
 
 interface Story {
   id: string;
@@ -82,11 +82,7 @@ export default function NewsPage() {
           const m = CATEGORY_META[n.category] ?? CATEGORY_META.general;
           return (
             <Link key={n.id} href={`/news/${n.id}`} className="group glass-card-hover overflow-hidden flex flex-col">
-              {n.imageUrl && (
-                <div className="h-40 overflow-hidden bg-kerala-surface">
-                  <NewsImage src={n.imageUrl} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                </div>
-              )}
+              {n.imageUrl && <NewsThumb src={n.imageUrl} className="h-40" />}
               <div className="p-5 flex flex-col flex-1">
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className={`text-xs px-2 py-0.5 rounded-full ${m.bg} ${m.color}`}>{m.label}</span>

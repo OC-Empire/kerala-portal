@@ -1,16 +1,47 @@
 import { DISTRICT_BY_SLUG } from "@/lib/districts";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { getTranslations } from "next-intl/server";
+import { getLiveNews, type Locale } from "@/lib/feeds";
+import { getCivicSummary } from "@/lib/civic-data";
+import { getPlaces } from "@/lib/places-data";
+import { getUndatedEvents, getUpcomingEvents } from "@/lib/events-data";
+import PlacesBrowser from "@/components/places-browser";
+import EventCard from "@/components/event-card";
+import NewsImage from "@/components/news-image";
+import { timeAgo } from "@/lib/utils";
 
 export default async function DistrictPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const d = DISTRICT_BY_SLUG[slug];
   if (!d) notFound();
 
+  const locale: Locale = (await cookies()).get("NEXT_LOCALE")?.value === "ml" ? "ml" : "en";
+  const t = await getTranslations("district");
+  const [places, upcoming, undated, allNews, civic] = await Promise.all([
+    getPlaces(slug),
+    getUpcomingEvents({ district: slug, limit: 12 }),
+    getUndatedEvents({ district: slug }),
+    getLiveNews(locale),
+    getCivicSummary(),
+  ]);
+  const news = allNews.filter((n) => n.districtSlug === slug).slice(0, 4);
+  const issues = civic.topByDistrict[slug] ?? [];
+  const hasEvents = upcoming.length + undated.length > 0;
+
+  const sections = [
+    { id: "overview", label: t("navOverview"), show: true },
+    { id: "places", label: t("navPlaces"), show: places.length > 0 },
+    { id: "events", label: t("navEvents"), show: hasEvents },
+    { id: "news", label: t("navNews"), show: news.length > 0 },
+    { id: "civic", label: t("navCivic"), show: true },
+  ].filter((x) => x.show);
+
   return (
     <div className="space-y-10">
       {/* District Hero */}
-      <div className={`glass-card p-6 md:p-10 relative overflow-hidden bg-gradient-to-br ${d.accentBg}`}>
+      <div id="overview" className={`glass-card p-6 md:p-10 relative overflow-hidden bg-gradient-to-br ${d.accentBg}`}>
         <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
           <Link href="/districts" className="text-kerala-muted text-sm hover:text-kerala-white transition-colors">
             ← All 14 Districts
@@ -46,6 +77,81 @@ export default async function DistrictPage({ params }: { params: Promise<{ slug:
           ))}
         </div>
       </div>
+
+      {/* Section nav: only sections that exist */}
+      <nav aria-label={t("sections")} className="sticky top-16 z-30 -mt-4 overflow-x-auto">
+        <div className="inline-flex gap-1 rounded-full border border-kerala-border bg-kerala-dark/90 backdrop-blur p-1 text-xs">
+          {sections.map((x) => (
+            <a key={x.id} href={`#${x.id}`} className="px-3.5 py-1.5 rounded-full font-semibold text-kerala-muted hover:text-kerala-white hover:bg-kerala-card transition-colors whitespace-nowrap">
+              {x.label}
+            </a>
+          ))}
+        </div>
+      </nav>
+
+      {places.length > 0 && (
+        <section id="places" className="space-y-4 scroll-mt-32">
+          <div>
+            <h2 className="section-heading">{t("placesHeading", { name: d.name })}</h2>
+            <p className="text-xs md:text-sm text-kerala-muted">{t("placesNote")}</p>
+          </div>
+          <PlacesBrowser
+            places={places.map((p) => ({
+              id: p.id, category: p.category, name: p.name, malayalamName: p.malayalamName, description: p.description,
+              address: p.address, lat: p.lat, lng: p.lng, phone: p.phone, website: p.website, hours: p.hours, fee: p.fee,
+              imageUrl: p.imageUrl, verified: p.verified,
+            }))}
+          />
+        </section>
+      )}
+
+      {hasEvents && (
+        <section id="events" className="space-y-4 scroll-mt-32">
+          <h2 className="section-heading">{t("eventsHeading", { name: d.name })}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[...upcoming, ...undated].map((e) => <EventCard key={e.id} event={e} />)}
+          </div>
+        </section>
+      )}
+
+      {news.length > 0 && (
+        <section id="news" className="space-y-4 scroll-mt-32">
+          <div className="flex items-end justify-between">
+            <h2 className="section-heading flex items-center gap-2"><span className="live-dot" /> {t("newsHeading", { name: d.name })}</h2>
+            <Link href="/news" className="text-xs text-kerala-gold hover:underline font-semibold">{t("allNews")} →</Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {news.map((n) => (
+              <Link key={n.id} href={`/news/${n.id}`} className="group glass-card-hover p-3 flex gap-3 items-center">
+                {n.imageUrl ? <NewsImage src={n.imageUrl} alt="" className="h-16 w-24 shrink-0 rounded-lg object-cover" /> : <div className="h-16 w-24 shrink-0 rounded-lg bg-kerala-surface flex items-center justify-center text-xl">📰</div>}
+                <div className="min-w-0">
+                  <h3 className="font-newsreader text-sm font-semibold text-kerala-white leading-snug line-clamp-2 group-hover:text-kerala-gold transition-colors">{n.title}</h3>
+                  <div className="text-[11px] text-kerala-muted mt-1">{n.source} · {timeAgo(n.publishedAt)}</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section id="civic" className="space-y-4 scroll-mt-32">
+        <h2 className="section-heading">{t("civicHeading", { name: d.name })}</h2>
+        {issues.length > 0 ? (
+          <ul className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {issues.map((i) => (
+              <li key={i.id}>
+                <Link href="/civic" className="glass-card-hover p-4 flex gap-3 items-start h-full">
+                  <span className="shrink-0 text-[11px] font-bold text-rose-300 bg-rose-900/40 rounded px-1.5 py-0.5">▲ {i.upvotes}</span>
+                  <span className="text-sm font-semibold text-kerala-white leading-snug">{i.title}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-kerala-muted">{t("noIssues")}</p>
+        )}
+        <Link href="/civic" className="btn-primary inline-block text-sm font-semibold px-5 py-2.5">{t("reportIssue")}</Link>
+      </section>
 
       {/* Sub-Locations & Localities Deep Dive (Hyperlocal section) */}
       <section className="space-y-4">
