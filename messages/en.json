@@ -19,9 +19,9 @@
     "title": "Kerala Portal",
     "badge": "Kerala's Hyperlocal Digital Nervous System · 14 Districts",
     "intro": "From <b>Kazhakootam & Technopark</b> in the south to the misty peaks of <b>Munnar</b> and the heritage shores of <b>Malabar</b> — civic reporting, hyperlocal news, cultural guides, and travel info in one place.",
-    "exploreDistricts": "🗺️ Explore 14 Districts & Hubs",
-    "reportIssue": "📢 Report Civic Issue",
-    "travelPlanner": "✈️ Travel Planner",
+    "exploreDistricts": "🗺️ Districts",
+    "reportIssue": "📢 Report an issue",
+    "travelPlanner": "✈️ Plan a trip",
     "breakingAlert": "Breaking Alert",
     "stats": {
       "population": "Population",
@@ -41,14 +41,81 @@
     "newsHeading": "Hyperlocal News Wire",
     "viewAllNews": "View All Bulletins →",
     "source": "Source: {source}",
-    "hubsHeading": "Prime Hubs",
+    "hubsHeading": "Places to explore",
     "allDistricts": "All 14 →",
     "civicCardTitle": "Citizen Grievances",
-    "civicCardBody": "Report civic problems in your area and upvote the ones that matter to you.",
-    "civicCardCta": "Open Action Board →"
+    "civicCardBody": "{open, plural, =0 {No open issues right now.} one {# open issue is waiting for attention.} other {# open issues are waiting for attention.}} Report problems in your area and upvote the ones that matter.",
+    "civicCardCta": "Open Action Board →",
+    "liveHeadlines": "Live headlines",
+    "tagline": "Live news, civic action and travel guides for all 14 districts.",
+    "hubsNote": "Curated guide · counts below are live",
+    "hubCounts": "{stories, plural, one {# live story} other {# live stories}} · {issues, plural, one {# open issue} other {# open issues}}"
   },
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong"
+  },
+  "news": {
+    "back": "← All news",
+    "via": "Reported by {source}",
+    "readFull": "Read the full article on {source}",
+    "attribution": "This is a short preview. The full story, and its photos, belong to {source} and open on their website.",
+    "more": "More stories",
+    "noPreview": "No preview is available for this story. Use the button below to read it at the source.",
+    "notFoundTitle": "Story not available",
+    "notFoundBody": "This story is no longer in our feed or the link isn't valid. Head back to the latest news.",
+    "live": "Live from publisher feeds",
+    "unavailable": "Live news is temporarily unavailable. Please try again shortly.",
+    "topStory": "Top story",
+    "latestStories": "Latest stories",
+    "stories": "{count, plural, one {# story} other {# stories}}"
+  },
+  "map": {
+    "title": "Kerala at a glance",
+    "hint": "Tap or hover a district. Gold badges show live stories.",
+    "fewer": "Fewer",
+    "more": "More",
+    "population": "Population",
+    "liveNow": "In the news now",
+    "latestHere": "Latest here",
+    "noStories": "No fresh stories from this district right now.",
+    "explore": "Explore {name} →",
+    "area": "Area",
+    "hintCivic": "Red shows open civic issues reported by citizens.",
+    "layer": "Map layer",
+    "layerStories": "📰 Stories",
+    "layerCivic": "🔧 Civic issues",
+    "openNow": "Open issues",
+    "openIssues": "{count, plural, one {# open issue} other {# open issues}}",
+    "topIssues": "Top issues here",
+    "noIssues": "No open issues reported here. 🎉",
+    "report": "Report an issue"
+  },
+  "kpi": {
+    "stories": "Stories today",
+    "storiesSub": "last 24 hours",
+    "issues": "Open civic issues",
+    "issuesSub": "reported by citizens",
+    "hottest": "Warmest now",
+    "coolest": "Coolest now",
+    "unavailable": "Unavailable",
+    "literacy": "Literacy rate",
+    "literacySub": "Census · #1 in India",
+    "districts": "Districts",
+    "districtsSub": "Reference"
+  },
+  "search": {
+    "placeholder": "Search districts, places, news, civic issues…",
+    "districts": "Districts",
+    "places": "Places",
+    "news": "News",
+    "civic": "Civic issues",
+    "searching": "Searching…",
+    "none": "No results for “{q}”"
+  },
+  "brief": {
+    "title": "Today in Kerala",
+    "badge": "AI brief",
+    "note": "Summarised by AI from today's real headlines. Tap a line to read the full story."
   }
 }

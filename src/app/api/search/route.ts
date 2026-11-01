@@ -1,30 +1,51 @@
 import { NextResponse } from "next/server";
-import { getDb, schema } from "@/db";
 import { DISTRICTS } from "@/lib/districts";
-import { MOCK_NEWS } from "@/lib/news";
-import { or, ilike, sql } from "drizzle-orm";
+import { getLiveNews } from "@/lib/feeds";
+import { getCivicIssues } from "@/lib/civic-data";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
+
+const norm = (s: string) => s.toLowerCase().normalize("NFC");
+const LIMIT = 5;
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const q = (searchParams.get("q") ?? "").trim();
-  if (!q) return NextResponse.json({ results: [] });
-
-  const db = getDb();
-  if (!db) {
-    const ql = q.toLowerCase();
-    const districts = DISTRICTS.filter((d) => d.name.toLowerCase().includes(ql) || d.tagline.toLowerCase().includes(ql));
-    const news = MOCK_NEWS.filter((n) => n.title.toLowerCase().includes(ql) || n.summary.toLowerCase().includes(ql));
-    return NextResponse.json({ results: { districts, news }, source: "memory_fallback" });
+  const rl = rateLimit(`search:${clientIp(request)}`, 40, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json({ error: "Too many searches" }, { status: 429, headers: { "Retry-After": String(rl.retryAfter) } });
   }
 
-  try {
-    const districts = await db.select().from(schema.districtsTable).where(ilike(schema.districtsTable.name, `%${q}%`));
-    const news = await db.select().from(schema.newsTable).where(ilike(schema.newsTable.title, `%${q}%`));
-    return NextResponse.json({ results: { districts, news }, source: "neon_postgres" });
-  } catch (e) {
-    const ql = q.toLowerCase();
-    const districts = DISTRICTS.filter((d) => d.name.toLowerCase().includes(ql));
-    const news = MOCK_NEWS.filter((n) => n.title.toLowerCase().includes(ql));
-    return NextResponse.json({ results: { districts, news }, source: "memory_fallback" });
+  const q = norm(new URL(request.url).searchParams.get("q") ?? "").trim().slice(0, 60);
+  const empty = { districts: [], places: [], news: [], civic: [] };
+  if (q.length < 2) return NextResponse.json({ results: empty });
+
+  const has = (...vals: (string | undefined)[]) => vals.some((v) => v && norm(v).includes(q));
+
+  const districts = DISTRICTS.filter((d) =>
+    has(d.name, d.malayalamName, d.capital, d.tagline, ...d.famousFor)
+  )
+    .slice(0, LIMIT)
+    .map((d) => ({ slug: d.slug, name: d.name, malayalamName: d.malayalamName, tagline: d.tagline }));
+
+  const places: { name: string; district: string; slug: string; kind: string }[] = [];
+  for (const d of DISTRICTS) {
+    for (const s of d.subLocations) {
+      if (has(s.name, s.malayalamName, s.tagline, ...s.highlights)) places.push({ name: s.name, district: d.name, slug: d.slug, kind: s.type });
+    }
+    for (const t of d.touristSpots) {
+      if (has(t.name, t.description)) places.push({ name: t.name, district: d.name, slug: d.slug, kind: "attraction" });
+    }
   }
+
+  const [en, ml, issues] = await Promise.all([getLiveNews("en"), getLiveNews("ml"), getCivicIssues()]);
+  const news = [...en, ...ml]
+    .filter((n) => has(n.title, n.summary, n.district))
+    .slice(0, LIMIT)
+    .map((n) => ({ id: n.id, title: n.title, district: n.district, source: n.source }));
+
+  const civic = issues
+    .filter((i) => has(i.title, i.subLocation, i.district))
+    .sort((a, b) => b.upvotes - a.upvotes)
+    .slice(0, LIMIT)
+    .map((i) => ({ id: i.id, title: i.title, district: i.district, upvotes: i.upvotes }));
+
+  return NextResponse.json({ results: { districts, places: places.slice(0, LIMIT), news, civic } });
 }

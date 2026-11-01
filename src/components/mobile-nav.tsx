@@ -14,13 +14,13 @@ export default function MobileNav() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="md:hidden text-kerala-white text-xl px-2"
+        className="xl:hidden text-kerala-white text-xl px-2"
         aria-label={t("openMenu")}
       >
         ☰
       </button>
       {open && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50 xl:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
           <aside className="absolute left-0 top-0 h-full w-72 bg-kerala-dark border-r border-kerala-border p-6">
             <button

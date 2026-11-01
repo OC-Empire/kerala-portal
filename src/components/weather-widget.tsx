@@ -11,25 +11,16 @@ interface WeatherReport {
 }
 
 export default function WeatherWidget() {
-  const [reports, setReports] = useState<WeatherReport[]>([
-    { district: "Thiruvananthapuram", temp: 31, condition: "Partly Cloudy", humidity: 72, icon: "⛅" },
-    { district: "Kochi", temp: 29, condition: "Light Coastal Rain", humidity: 85, icon: "🌦️" },
-    { district: "Munnar", temp: 18, condition: "Misty Mountain Breezes", humidity: 92, icon: "🌫️" },
-    { district: "Kozhikode", temp: 30, condition: "Clear Shoreline", humidity: 68, icon: "🌤️" },
-    { district: "Alappuzha", temp: 30, condition: "Backwater Sunshine", humidity: 78, icon: "☀️" },
-  ]);
+  const [reports, setReports] = useState<WeatherReport[] | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     fetch("/api/weather")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.weather && Array.isArray(data.weather)) {
-          setReports(data.weather);
-        }
-      })
-      .catch(() => {
-        // Fallback already pre-seeded
-      });
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((data) => { if (!cancelled && Array.isArray(data.weather)) setReports(data.weather); })
+      .catch(() => { if (!cancelled) setFailed(true); });
+    return () => { cancelled = true; };
   }, []);
 
   return (
@@ -38,14 +29,18 @@ export default function WeatherWidget() {
         <div className="flex items-center gap-2">
           <span className="live-dot" />
           <h3 className="text-sm font-semibold text-kerala-white uppercase tracking-wider">
-            Live Kerala Climate & Weather Pulse
+            Kerala Weather Right Now
           </h3>
         </div>
-        <span className="text-xs text-kerala-muted">IMD & Realtime Sensor Feed</span>
+        <span className="text-xs text-kerala-muted">Live data · Open-Meteo</span>
       </div>
 
+      {failed && <p role="alert" className="text-sm text-kerala-muted">Weather is temporarily unavailable.</p>}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-        {reports.slice(0, 5).map((w) => (
+        {!reports && !failed && Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="h-[118px] rounded-xl bg-kerala-dark/60 border border-kerala-border/40 animate-pulse" />
+        ))}
+        {(reports ?? []).slice(0, 5).map((w) => (
           <div
             key={w.district}
             className="bg-kerala-dark/60 border border-kerala-border/60 rounded-xl p-3 text-center transition-all hover:border-kerala-green/50"

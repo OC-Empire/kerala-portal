@@ -20,14 +20,14 @@ export default function Navbar() {
             {tHome("title")}
           </span>
         </Link>
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden xl:flex items-center gap-1">
           {NAV_LINKS.map((l) => {
             const active = pathname === l.href;
             return (
               <Link
                 key={l.href}
                 href={l.href}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
                   active
                     ? "bg-kerala-green/30 text-kerala-light"
                     : "text-kerala-muted hover:text-kerala-white hover:bg-kerala-card"

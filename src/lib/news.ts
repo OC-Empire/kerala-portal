@@ -13,6 +13,7 @@ export interface NewsItem {
 
 export type NewsCategory =
   | "all"
+  | "general"
   | "infrastructure"
   | "politics"
   | "tech"
@@ -29,6 +30,7 @@ export const CATEGORY_META: Record<
   { label: string; color: string; bg: string }
 > = {
   all:            { label: "All",            color: "text-kerala-white",   bg: "bg-kerala-border"   },
+  general:        { label: "General",        color: "text-slate-300",      bg: "bg-slate-700/50"    },
   infrastructure: { label: "Infrastructure", color: "text-orange-300",     bg: "bg-orange-900/40"   },
   politics:       { label: "Politics",       color: "text-red-300",        bg: "bg-red-900/40"      },
   tech:           { label: "Tech",           color: "text-cyan-300",       bg: "bg-cyan-900/40"     },
