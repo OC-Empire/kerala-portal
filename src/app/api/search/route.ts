@@ -4,7 +4,7 @@ import { getLiveNews } from "@/lib/feeds";
 import { getCivicIssues } from "@/lib/civic-data";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { getDb, schema } from "@/db";
-import { ilike, or, sql } from "drizzle-orm";
+import { and, ilike, or, sql } from "drizzle-orm";
 import { isMissingTable } from "@/lib/db-errors";
 
 const norm = (s: string) => s.toLowerCase().normalize("NFC");
@@ -20,7 +20,12 @@ export async function GET(request: Request) {
   const empty = { districts: [], places: [], news: [], civic: [], events: [] };
   if (q.length < 2) return NextResponse.json({ results: empty });
 
-  const has = (...vals: (string | undefined)[]) => vals.some((v) => v && norm(v).includes(q));
+  // every typed word must appear somewhere in the item's text, in any order ("thalassery biryani" finds "Thalassery dum biryani")
+  const tokens = q.split(/\s+/).filter((t) => t.length >= 2);
+  const has = (...vals: (string | undefined)[]) => {
+    const text = norm(vals.filter(Boolean).join(" "));
+    return tokens.length > 0 && tokens.every((t) => text.includes(t));
+  };
 
   const districts = DISTRICTS.filter((d) =>
     has(d.name, d.malayalamName, d.capital, d.tagline, ...d.famousFor, ...d.signatureFood, ...d.culturalIcons)
@@ -43,14 +48,14 @@ export async function GET(request: Request) {
   let events: { id: string; title: string; district: string; sport: string | null; category: string }[] = [];
   const db = getDb();
   if (db) {
-    const like = `%${q.replace(/[%_\\]/g, "")}%`;
     try {
+      const anyOf = (cols: any[], t: string) => or(...cols.map((c) => ilike(c, `%${t.replace(/[%_\\]/g, "")}%`)));
       const rows = await db.select().from(schema.placesTable)
-        .where(or(ilike(schema.placesTable.name, like), ilike(schema.placesTable.malayalamName, like), ilike(schema.placesTable.description, like)))
+        .where(and(...tokens.map((t) => anyOf([schema.placesTable.name, schema.placesTable.malayalamName, schema.placesTable.description], t))))
         .limit(LIMIT);
       dbPlaces = rows.map((r) => ({ name: r.name, district: DISTRICTS.find((d) => d.slug === r.districtSlug)?.name ?? r.districtSlug, slug: r.districtSlug, kind: r.category }));
       const ev = await db.select().from(schema.eventsTable)
-        .where(or(ilike(schema.eventsTable.title, like), ilike(schema.eventsTable.malayalamTitle, like), ilike(schema.eventsTable.venue, like), sql`false`))
+        .where(and(...tokens.map((t) => anyOf([schema.eventsTable.title, schema.eventsTable.malayalamTitle, schema.eventsTable.venue], t))))
         .limit(LIMIT);
       events = ev.map((r) => ({ id: r.id, title: r.title, district: DISTRICTS.find((d) => d.slug === r.districtSlug)?.name ?? "Kerala", sport: r.sport, category: r.category }));
     } catch (e) {
