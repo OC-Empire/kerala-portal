@@ -188,7 +188,15 @@ export default function CivicBoard() {
         {loading && <p className="text-sm text-kerala-muted">Loading issues…</p>}
         {loadError && <p role="alert" className="text-sm text-rose-400">Couldn't load issues. Please refresh.</p>}
         {!loading && !loadError && filtered.length === 0 && (
-          <p className="text-sm text-kerala-muted">No issues match these filters.</p>
+          issues.length === 0 ? (
+            <div className="glass-card p-6 text-center space-y-2">
+              <div className="text-3xl" aria-hidden>🌴</div>
+              <p className="text-sm text-kerala-white font-semibold">No citizen reports yet.</p>
+              <p className="text-sm text-kerala-muted">Be the first to report a problem in your area. To get something fixed, also contact the responsible department. The directory below shows who.</p>
+            </div>
+          ) : (
+            <p className="text-sm text-kerala-muted">No issues match these filters.</p>
+          )
         )}
         {filtered.map((item) => {
           const hasVoted = !!votedIds[item.id];
