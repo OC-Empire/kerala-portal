@@ -15,9 +15,15 @@
 - **Hidden gems:** hand-picked from "offbeat / lesser-known" lists for each district, checked against OpenStreetMap, not shown if the coordinates were outside the district.
 - **Events:** only festivals whose typical timing was confirmed in at least one source. Dates are given as notes (e.g. "Held in the Malayalam month Kumbham") rather than guessed.
 
+## Second pass: thin districts (`data/places-kerala-extra.csv`, 26 entries)
+Added the same day for districts that had few or no schools and libraries.
+- 10 schools and 1 school-like page came from Wikipedia articles that actually exist (e.g. St. Thomas HSS Kozhencherry, Bishop Hodges HSS Mavelikkara, Railway High School Palakkad). Several other school pages surfaced by web search no longer exist on Wikipedia (they now redirect to town articles) and were not used as Wikipedia entries.
+- 10 further schools and 5 libraries are **web-sourced**: a fact or two taken from the cited page (founding year, location), written in our own words. These are weaker than the Wikipedia-backed rows. Several rest on a single page, and some cited pages are Wikipedia mirrors or blogs. Each row's `source_url` shows where the claim came from.
+- Coordinates were looked up on OpenStreetMap. A match was kept only when it was the right institution; where the best match was a different school or road, the coordinates were left blank.
+
 ## Known gaps (add via CSV, see DATA-GUIDE.md)
-- Libraries: only Thiruvananthapuram, Kollam, Kottayam, Ernakulam and Thrissur have entries. The other nine districts have none because no notable library could be confirmed.
-- Schools: thin for Pathanamthitta, Alappuzha, Kannur and Kasaragod. Wikipedia covers few schools there.
-- Kasaragod has the fewest entries overall (8).
+- Libraries: Pathanamthitta, Idukki, Wayanad and Kasaragod still have none. No notable library could be confirmed for them.
+- Schools: every district now has at least 2, but Wayanad, Kasaragod, Malappuram and Thrissur are the thinnest.
+- Kasaragod has few entries overall.
 - Everything is `verified=false`. Nothing was confirmed by a human, and hours/fees are not included.
-- 39 places have no coordinates (no reliable source), so they show no "Directions" link.
+- Some places have no coordinates (no reliable source), so they show no "Directions" link.
