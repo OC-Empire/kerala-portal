@@ -33,8 +33,11 @@ Categories `food` ("Food & flavours") and `culture` ("Arts, crafts & traditions"
 Category `restaurant` ("Famous restaurants"), shown in each district's FOOD section.
 - Picked from food-writing sources (Onmanorama, The News Minute, Kerala Tourism, Outlook Traveller, Wikipedia) and travel guides. Pathanamthitta, Idukki, Malappuram, Wayanad and Kasaragod rest on weaker sources (aggregator listings), so they are few and described cautiously.
 - Descriptions are our own wording of what the source says. No ratings, prices or opening hours are included, because none could be verified and they change.
-- Coordinates come from OpenStreetMap, kept only when the match was the right place (15 of 45). Four mismatched ones were blanked rather than shown.
+- Coordinates come from OpenStreetMap, kept only when the match was clearly the right place (20 of 45). Mismatches (a different shop, an Akshaya centre, a snack stall) were blanked rather than shown.
 - Restaurants close and change. The site shows a notice on every restaurant block.
+
+## Round two (`data/places-kerala-round2.csv`, `data/seed/events-round2.csv`)
+Ten more places and one event for thin districts: culture for Idukki (Mannan Koothu), Wayanad (Gadhika, Vattakali, Nellukuthu Pattu), Pathanamthitta (Kadammanitta Padayani) and Kottayam (Ettumanoor Ezhara Ponnana, Vaikom Ashtami); food for Pathanamthitta (pothichoru) and Kasaragod (Kori Rotti, Patholi, Beary biryani). Libraries for Pathanamthitta, Idukki, Wayanad and Kasaragod were searched for again and none notable could be confirmed, so those four still have none. OpenStreetMap lists hundreds of tiny village reading rooms there, but they are not "notable libraries" and were left out on purpose.
 
 ## Government services, NRI Corner and civic guide
 Content lives in `src/lib/gov-data.ts`. Every link was requested on 2026-11-01. 26 responded; 8 official sites did not respond from our server (likely geo-blocking) and are marked "couldn't be checked". Helpline numbers marked as secondary-source (e.g. KWA 1916) are flagged on the site. We deliberately do not quote fees, cover amounts or pension rates because sources disagreed and they change.
