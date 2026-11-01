@@ -8,6 +8,7 @@ import { getCivicSummary } from "@/lib/civic-data";
 import { getPlaces } from "@/lib/places-data";
 import { getUndatedEvents, getUpcomingEvents } from "@/lib/events-data";
 import PlacesBrowser from "@/components/places-browser";
+import DistrictFood from "@/components/district-food";
 import EventCard from "@/components/event-card";
 import NewsImage from "@/components/news-image";
 import { timeAgo } from "@/lib/utils";
@@ -34,15 +35,18 @@ export default async function DistrictPage({ params, searchParams }: { params: P
   // researched food/culture entries live in the Places browser; keep the profile lists only for names they don't cover
   const extraFood = uncovered(d.signatureFood, places.filter((p) => p.category === "food").map((p) => p.name));
   const extraCulture = uncovered(d.culturalIcons, places.filter((p) => p.category === "culture").map((p) => p.name));
-  const foodMore = places.some((p) => p.category === "food");
+  const dishes = places.filter((p) => p.category === "food");
+  const restaurants = places.filter((p) => p.category === "restaurant");
+  const hasFood = dishes.length + restaurants.length + extraFood.length > 0;
+  const browsePlaces = places.filter((p) => p.category !== "food" && p.category !== "restaurant");
   const cultureMore = places.some((p) => p.category === "culture");
 
   const sections = [
     { id: "overview", label: t("navOverview"), show: true },
-    { id: "places", label: t("navPlaces"), show: places.length > 0 },
+    { id: "food", label: t("navFood"), show: hasFood },
+    { id: "places", label: t("navPlaces"), show: browsePlaces.length > 0 },
     { id: "events", label: t("navEvents"), show: hasEvents },
     { id: "news", label: t("navNews"), show: news.length > 0 },
-    { id: "food", label: t("navFood"), show: extraFood.length > 0 },
     { id: "culture", label: t("navCulture"), show: extraCulture.length > 0 },
     { id: "civic", label: t("navCivic"), show: true },
   ].filter((x) => x.show);
@@ -98,7 +102,9 @@ export default async function DistrictPage({ params, searchParams }: { params: P
         </div>
       </nav>
 
-      {places.length > 0 && (
+      {hasFood && <DistrictFood dishes={dishes} restaurants={restaurants} extras={extraFood} districtName={d.name} />}
+
+      {browsePlaces.length > 0 && (
         <section id="places" className="space-y-4 scroll-mt-32">
           <div>
             <h2 className="section-heading">{t("placesHeading", { name: d.name })}</h2>
@@ -106,7 +112,7 @@ export default async function DistrictPage({ params, searchParams }: { params: P
           </div>
           <PlacesBrowser
             initialCat={initialCat}
-            places={places.map((p) => ({
+            places={browsePlaces.map((p) => ({
               id: p.id, category: p.category, name: p.name, malayalamName: p.malayalamName, description: p.description,
               address: p.address, lat: p.lat, lng: p.lng, phone: p.phone, website: p.website, hours: p.hours, fee: p.fee,
               imageUrl: p.imageUrl, verified: p.verified, sourceUrl: p.sourceUrl,
@@ -257,24 +263,8 @@ export default async function DistrictPage({ params, searchParams }: { params: P
       </section>
 
       {/* Food & Cultural Heritage */}
-      {(extraFood.length > 0 || extraCulture.length > 0) && (
+      {extraCulture.length > 0 && (
       <div className="grid md:grid-cols-2 gap-6">
-        {extraFood.length > 0 && (
-        <section id="food" className="glass-card p-6 space-y-4 scroll-mt-32">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🍲</span>
-            <h2 className="section-heading text-xl">{foodMore ? t("moreFood") : "Signature Cuisine"}</h2>
-          </div>
-          <p className="text-xs text-kerala-muted">Authentic flavors indigenous to {d.name} kitchens & street stalls.</p>
-          <ul className="space-y-2.5">
-            {extraFood.map((f) => (
-              <li key={f} className="bg-kerala-dark/60 border border-kerala-border/60 rounded-xl p-3 text-sm text-kerala-white flex items-center gap-2">
-                <span className="text-kerala-gold">✦</span> {f}
-              </li>
-            ))}
-          </ul>
-        </section>
-        )}
 
         {extraCulture.length > 0 && (
         <section id="culture" className="glass-card p-6 space-y-4 scroll-mt-32">

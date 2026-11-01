@@ -29,8 +29,21 @@ Categories `food` ("Food & flavours") and `culture` ("Arts, crafts & traditions"
 - On the site, researched entries show first; profile names from the original district data are shown after them only if they aren't already covered.
 - Not district-specific dishes (sadya, appam, puttu) are only listed where a source ties them to the district.
 
+## Fourth pass: restaurants (`data/places-kerala-restaurants.csv`, 45 entries)
+Category `restaurant` ("Famous restaurants"), shown in each district's FOOD section.
+- Picked from food-writing sources (Onmanorama, The News Minute, Kerala Tourism, Outlook Traveller, Wikipedia) and travel guides. Pathanamthitta, Idukki, Malappuram, Wayanad and Kasaragod rest on weaker sources (aggregator listings), so they are few and described cautiously.
+- Descriptions are our own wording of what the source says. No ratings, prices or opening hours are included, because none could be verified and they change.
+- Coordinates come from OpenStreetMap, kept only when the match was the right place (15 of 45). Four mismatched ones were blanked rather than shown.
+- Restaurants close and change. The site shows a notice on every restaurant block.
+
+## Government services, NRI Corner and civic guide
+Content lives in `src/lib/gov-data.ts`. Every link was requested on 2026-11-01. 26 responded; 8 official sites did not respond from our server (likely geo-blocking) and are marked "couldn't be checked". Helpline numbers marked as secondary-source (e.g. KWA 1916) are flagged on the site. We deliberately do not quote fees, cover amounts or pension rates because sources disagreed and they change.
+
+## News archive
+Publisher feeds expose only the latest few dozen stories. Every story we see is stored in the `news_items` table so older stories stay browsable (News and Sports pages). It starts on the day the table is created and cannot reach further back. A daily cron (`/api/cron/ingest`, see `vercel.json`) plus the pages themselves keep it filled.
+
 ## Known gaps (add via CSV, see DATA-GUIDE.md)
 - Libraries: Pathanamthitta, Idukki, Wayanad and Kasaragod still have none.
-- Culture: Idukki has one entry; Pathanamthitta, Wayanad and Kottayam two each. Food is thinnest in Pathanamthitta (1) and Kasaragod (2).
-- Descriptions of Wikipedia-backed rows are the article's first sentences and can be dry.
+- Culture: Idukki has one entry; Pathanamthitta, Wayanad and Kottayam two each.
+- Food is thinnest in Pathanamthitta and Kasaragod; restaurants in Pathanamthitta have a single entry.
 - Everything is `verified=false`. Nothing was confirmed by a human.

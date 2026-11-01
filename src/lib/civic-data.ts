@@ -2,6 +2,9 @@ import "server-only";
 import { getDb, schema } from "@/db";
 import { fallbackStore } from "@/lib/db";
 
+// The original seed shipped five demo reports with ids iss-1..iss-5. Real reports get iss-<uuid>.
+export const isSampleIssue = (id: string) => /^iss-\d{1,3}$/.test(id);
+
 export interface CivicRow {
   id: string;
   title: string;
@@ -39,7 +42,7 @@ export interface CivicSummary {
 }
 
 export async function getCivicSummary(): Promise<CivicSummary> {
-  const open = (await getCivicIssues()).filter((i) => i.status !== "resolved");
+  const open = (await getCivicIssues()).filter((i) => i.status !== "resolved" && !isSampleIssue(i.id));
   const openByDistrict: Record<string, number> = {};
   const topByDistrict: CivicSummary["topByDistrict"] = {};
   for (const i of open) {

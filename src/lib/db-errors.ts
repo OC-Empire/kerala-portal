@@ -4,6 +4,6 @@ export function isMissingTable(e: unknown): boolean {
   return (
     err?.code === "42P01" ||
     err?.cause?.code === "42P01" ||
-    /relation "?(places|events)"? does not exist/i.test(`${err?.message ?? ""} ${err?.cause?.message ?? ""}`)
+    /relation "?(places|events|news_items)"? does not exist/i.test(`${err?.message ?? ""} ${err?.cause?.message ?? ""}`)
   );
 }

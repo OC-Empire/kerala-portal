@@ -1,5 +1,5 @@
 // Usage: node --env-file=.env.local scripts/create-tables.mjs
-// Idempotent + additive: only creates the places/events tables (and indexes) if missing.
+// Idempotent + additive: only creates the places/events/news_items tables (and indexes) if missing.
 import { neon } from "@neondatabase/serverless";
 
 const url = process.env.DATABASE_URL;
@@ -49,6 +49,25 @@ const statements = [
   )`,
   `CREATE INDEX IF NOT EXISTS events_starts_idx ON events (starts_at)`,
   `CREATE INDEX IF NOT EXISTS events_district_idx ON events (district_slug)`,
+  `CREATE TABLE IF NOT EXISTS news_items (
+    id text PRIMARY KEY,
+    title text NOT NULL,
+    summary text NOT NULL DEFAULT '',
+    category text NOT NULL,
+    district text NOT NULL,
+    district_slug text NOT NULL DEFAULT '',
+    source text NOT NULL,
+    url text NOT NULL,
+    image_url text,
+    section text NOT NULL,
+    sport text,
+    kerala boolean NOT NULL DEFAULT false,
+    lang text NOT NULL DEFAULT 'en',
+    published_at timestamptz NOT NULL,
+    first_seen timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS news_items_pub_idx ON news_items (section, published_at DESC)`,
+  `CREATE INDEX IF NOT EXISTS news_items_district_idx ON news_items (district_slug, published_at DESC)`,
 ];
 
 for (const s of statements) {

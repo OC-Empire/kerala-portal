@@ -107,3 +107,23 @@ export const eventsTable = pgTable("events", {
 
 export type PlaceRow = typeof placesTable.$inferSelect;
 export type EventRow = typeof eventsTable.$inferSelect;
+
+// ---- News archive: every story we have seen in the publisher feeds (feeds only expose the latest few dozen) ----
+export const newsItemsTable = pgTable("news_items", {
+  id: text("id").primaryKey(), // base64url of the publisher link (same id the reader page uses)
+  title: text("title").notNull(),
+  summary: text("summary").notNull().default(""),
+  category: text("category").notNull(),
+  district: text("district").notNull(),
+  districtSlug: text("district_slug").notNull().default(""),
+  source: text("source").notNull(),
+  url: text("url").notNull(),
+  imageUrl: text("image_url"),
+  section: text("section").notNull(), // "news" | "sports"
+  sport: text("sport"),
+  kerala: boolean("kerala").notNull().default(false),
+  lang: text("lang").notNull().default("en"),
+  publishedAt: timestamp("published_at", { withTimezone: true }).notNull(),
+  firstSeen: timestamp("first_seen", { withTimezone: true }).defaultNow().notNull(),
+});
+export type NewsItemRow = typeof newsItemsTable.$inferSelect;

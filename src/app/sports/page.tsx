@@ -7,6 +7,7 @@ import { getUndatedEvents, getUpcomingEvents } from "@/lib/events-data";
 import EventCard from "@/components/event-card";
 import NewsThumb from "@/components/news-thumb";
 import { timeAgo } from "@/lib/utils";
+import { archiveNews, queryArchive } from "@/lib/news-archive";
 
 export const metadata: Metadata = {
   title: "Sports — Kerala Portal",
@@ -16,11 +17,15 @@ export const metadata: Metadata = {
 const TABS = ["kerala", "cricket", "football", "all"] as const;
 type Tab = (typeof TABS)[number];
 
-export default async function SportsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const { tab: rawTab } = await searchParams;
+const PAGE = 18;
+
+export default async function SportsPage({ searchParams }: { searchParams: Promise<{ tab?: string; page?: string }> }) {
+  const { tab: rawTab, page: rawPage } = await searchParams;
+  const page = Math.min(Math.max(parseInt(rawPage ?? "1", 10) || 1, 1), 200);
   const tab: Tab = (TABS as readonly string[]).includes(rawTab ?? "") ? (rawTab as Tab) : "kerala";
   const locale: Locale = (await cookies()).get("NEXT_LOCALE")?.value === "ml" ? "ml" : "en";
   const t = await getTranslations("sports");
+  const tn = await getTranslations("news");
 
   const [upcoming, calendar, allNews] = await Promise.all([
     getUpcomingEvents({ category: "sports", limit: 12 }),
@@ -28,7 +33,19 @@ export default async function SportsPage({ searchParams }: { searchParams: Promi
     getSportsNews(locale),
   ]);
 
-  const news = allNews.filter((n) => (tab === "all" ? true : tab === "kerala" ? n.kerala : n.sport === tab));
+  // keep today's stories for tomorrow, then read the archive (older stories + paging)
+  await archiveNews(allNews, "sports", { lang: locale });
+  const archived = await queryArchive({
+    section: "sports", locale,
+    sport: tab === "cricket" || tab === "football" ? tab : undefined,
+    keralaOnly: tab === "kerala",
+    limit: PAGE, offset: (page - 1) * PAGE,
+  });
+  const filtered = allNews.filter((n) => (tab === "all" ? true : tab === "kerala" ? n.kerala : n.sport === tab));
+  const news = archived ? archived.items : filtered.slice((page - 1) * PAGE, page * PAGE);
+  const total = archived ? archived.total : filtered.length;
+  const pages = Math.max(1, Math.ceil(total / PAGE));
+  const href = (p: number, k: string = tab) => `/sports?tab=${k}${p > 1 ? `&page=${p}` : ""}`;
 
   return (
     <div className="space-y-10">
@@ -85,10 +102,10 @@ export default async function SportsPage({ searchParams }: { searchParams: Promi
         </div>
 
         {news.length === 0 ? (
-          <p className="text-sm text-kerala-muted">{allNews.length === 0 ? t("newsUnavailable") : t("noNewsInTab")}</p>
+          <p className="text-sm text-kerala-muted">{allNews.length === 0 && !archived ? t("newsUnavailable") : t("noNewsInTab")}</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {news.slice(0, 18).map((n) => (
+            {news.map((n) => (
               <Link key={n.id} href={`/news/${n.id}`} className="group glass-card-hover overflow-hidden flex flex-col">
                 {n.imageUrl && <NewsThumb src={n.imageUrl} />}
                 <div className="p-4 flex flex-col flex-1">
@@ -106,6 +123,14 @@ export default async function SportsPage({ searchParams }: { searchParams: Promi
               </Link>
             ))}
           </div>
+        )}
+
+        {pages > 1 && (
+          <nav aria-label="Sports news pages" className="flex items-center justify-between gap-3 pt-2 text-sm">
+            {page > 1 ? <Link href={href(page - 1)} className="btn-primary text-xs font-semibold px-4 py-2">← {tn("newerStories")}</Link> : <span />}
+            <span className="text-xs text-kerala-muted">{page} / {pages}</span>
+            {page < pages ? <Link href={href(page + 1)} className="btn-primary text-xs font-semibold px-4 py-2">{tn("olderStories")} →</Link> : <span />}
+          </nav>
         )}
       </section>
     </div>

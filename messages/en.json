@@ -69,7 +69,14 @@
     "unavailable": "Live news is temporarily unavailable. Please try again shortly.",
     "topStory": "Top story",
     "latestStories": "Latest stories",
-    "stories": "{count, plural, one {# story} other {# stories}}"
+    "stories": "{count, plural, one {# story} other {# stories}}",
+    "searchStories": "Search stories…",
+    "showing": "Showing {shown} of {total} stories",
+    "loadMore": "Load older stories",
+    "loadingMore": "Loading…",
+    "archiveSince": "archive since {date}",
+    "olderStories": "Older stories",
+    "newerStories": "Newer stories"
   },
   "map": {
     "title": "Kerala at a glance",
@@ -170,7 +177,13 @@
     "navFood": "Food",
     "navCulture": "Culture",
     "moreFood": "More local favourites",
-    "moreCulture": "More cultural icons"
+    "moreCulture": "More cultural icons",
+    "foodHeading": "Food in {name}",
+    "foodNote": "Signature dishes, famous restaurants and local favourites.",
+    "dishesToTry": "Dishes to try",
+    "restaurantsHeading": "Famous restaurants & eateries",
+    "restaurant": "Restaurant",
+    "restaurantNote": "Restaurant details come from public web sources and can be out of date. Check hours, prices and whether a place is still open before you go."
   },
   "explore": {
     "title": "Explore more in {name}",

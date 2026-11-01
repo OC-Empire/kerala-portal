@@ -1,364 +1,82 @@
-"use client";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { cookies } from "next/headers";
+import CivicBoard from "@/components/civic-board";
+import { getLiveNews, type Locale } from "@/lib/feeds";
+import { CIVIC_AUTHORITIES, HELPLINES, LINKS_CHECKED } from "@/lib/gov-data";
+import { timeAgo } from "@/lib/utils";
 
-import { useEffect, useState } from "react";
-import { DISTRICTS } from "@/lib/districts";
-
-interface Issue {
-  id: string;
-  title: string;
-  description: string;
-  district: string;
-  subLocation: string;
-  category: string;
-  status: string;
-  upvotes: number;
-  createdAt?: string;
-}
-
-const CATEGORY_ICONS: Record<string, string> = {
-  roads: "🚧 Roads & Transport",
-  water: "💧 Water Supply",
-  electricity: "⚡ Power & Lighting",
-  sanitation: "🗑️ Sanitation & Waste",
-  safety: "🚨 Public Safety",
-  other: "📌 General Civic",
+export const metadata: Metadata = {
+  title: "Civic Issues — Kerala Portal",
+  description: "Report and track civic issues, find the right authority, and see civic stories from the news.",
 };
 
-export default function CivicPage() {
-  const [issues, setIssues] = useState<Issue[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+// stories that are about everyday civic problems
+const CIVIC_RE = /pothole|waterlog|water supply|drinking water|water shortage|power cut|power outage|outage|street ?light|garbage|waste|sewage|drain|encroach|road (?:collapse|cave|repair|work)|landslide|flood|traffic|bridge|ksrtc|kseb|water authority|panchayat|corporation|municipal|ശുദ്ധജല|വെള്ളക്കെട്ട്|മാലിന്യ|റോഡ്|വൈദ്യുതി|ഉരുൾ|വെള്ളപ്പൊക്ക/i;
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/civic")
-      .then((r) => {
-        if (!r.ok) throw new Error(String(r.status));
-        return r.json();
-      })
-      .then((d) => { if (!cancelled) setIssues(d.issues ?? []); })
-      .catch(() => { if (!cancelled) setLoadError(true); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
-
-  const [selectedDistrict, setSelectedDistrict] = useState("all");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [showModal, setShowModal] = useState(false);
-
-  // Form state
-  const [formTitle, setFormTitle] = useState("");
-  const [formDesc, setFormDesc] = useState("");
-  const [formDistrict, setFormDistrict] = useState("thiruvananthapuram");
-  const [formSubLoc, setFormSubLoc] = useState("");
-  const [formCat, setFormCat] = useState("roads");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [votedIds, setVotedIds] = useState<Record<string, boolean>>({});
-
-  const handleUpvote = async (id: string) => {
-    if (votedIds[id]) return;
-    setVotedIds((prev) => ({ ...prev, [id]: true }));
-    setIssues((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, upvotes: item.upvotes + 1 } : item))
-    );
-
-    try {
-      const res = await fetch(`/api/civic/${id}/upvote`, { method: "POST" });
-      // 409 = already voted from this browser: keep the "voted" state but undo the optimistic bump
-      if (!res.ok) throw new Error(String(res.status));
-    } catch {
-      setIssues((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, upvotes: Math.max(0, item.upvotes - 1) } : item))
-      );
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formTitle.trim() || !formDesc.trim()) return;
-
-    setIsSubmitting(true);
-    setFormError(null);
-    try {
-      const res = await fetch("/api/civic", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: formTitle,
-          description: formDesc,
-          district: formDistrict,
-          subLocation: formSubLoc,
-          category: formCat,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.issue) {
-        setFormError(data.error ?? "Could not submit your report. Please try again.");
-        return;
-      }
-      setIssues((prev) => [data.issue, ...prev]);
-      setShowModal(false);
-      setFormTitle("");
-      setFormDesc("");
-      setFormSubLoc("");
-    } catch {
-      setFormError("Network error. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const filtered = issues.filter((i) => {
-    if (selectedDistrict !== "all" && i.district.toLowerCase() !== selectedDistrict.toLowerCase()) return false;
-    if (selectedCategory !== "all" && i.category.toLowerCase() !== selectedCategory.toLowerCase()) return false;
-    return true;
-  });
+export default async function CivicPage() {
+  const locale: Locale = (await cookies()).get("NEXT_LOCALE")?.value === "ml" ? "ml" : "en";
+  const news = (await getLiveNews(locale, 60)).filter((n) => CIVIC_RE.test(n.title + " " + n.summary)).slice(0, 6);
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="glass-card p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-12">
+      <CivicBoard />
+
+      {/* Where to report */}
+      <section className="space-y-4">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="live-dot" />
-            <span className="text-xs uppercase tracking-wider text-kerala-gold font-bold">
-              Citizen Governance Engine · Neon Powered
-            </span>
-          </div>
-          <h1 className="section-heading text-3xl md:text-4xl text-kerala-white">
-            Kerala Civic Issue Tracker & Action Board
-          </h1>
-          <p className="text-kerala-muted text-sm md:text-base mt-2 max-w-2xl">
-            Real community monitoring from Kazhakootam IT corridor to Wayanad highlands. Report civic breakdowns, upvote urgent complaints, and demand transparency from local authorities.
+          <h2 className="section-heading text-2xl">Who to contact</h2>
+          <p className="text-xs md:text-sm text-kerala-muted mt-1 max-w-2xl">
+            Posting here raises awareness, but it does not file an official complaint. For action, contact the department responsible.
           </p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="btn-gold whitespace-nowrap self-start md:self-center flex items-center gap-2 shadow-gold"
-        >
-          <span>📢</span> Report New Issue
-        </button>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-        <div>
-          <label className="text-xs text-kerala-muted block mb-1">Filter by District</label>
-          <select
-            value={selectedDistrict}
-            onChange={(e) => setSelectedDistrict(e.target.value)}
-            className="w-full bg-kerala-card border border-kerala-border rounded-xl px-3 py-2 text-sm text-kerala-white outline-none focus:border-kerala-green"
-          >
-            <option value="all">🌴 All 14 Districts</option>
-            {DISTRICTS.map((d) => (
-              <option key={d.slug} value={d.slug}>
-                {d.name} ({d.malayalamName})
-              </option>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {CIVIC_AUTHORITIES.map((a) => (
+            <article key={a.id} className="glass-card p-5 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl" aria-hidden>{a.icon}</span>
+                <h3 className="font-newsreader text-lg font-bold text-kerala-white leading-snug">{a.issue}</h3>
+              </div>
+              <p className="text-sm text-kerala-muted"><strong className="text-kerala-white font-semibold">Who: </strong>{a.who}</p>
+              <p className="text-sm text-kerala-muted"><strong className="text-kerala-white font-semibold">How: </strong>{a.how}</p>
+              <div className="flex flex-wrap items-center gap-3 mt-auto pt-2">
+                {a.number && <a href={`tel:${a.number}`} className="btn-gold text-xs font-semibold px-3 py-1.5">📞 {a.number}</a>}
+                {a.url && <a href={a.url} target="_blank" rel="noopener noreferrer" className="text-xs text-kerala-light hover:underline font-semibold">Official site ↗</a>}
+              </div>
+            </article>
+          ))}
+        </div>
+        <details className="glass-card p-4 text-sm">
+          <summary className="cursor-pointer font-semibold text-kerala-white">All emergency and helpline numbers</summary>
+          <ul className="mt-3 grid sm:grid-cols-2 gap-x-6 gap-y-2">
+            {HELPLINES.map((h) => (
+              <li key={h.label} className="flex justify-between gap-3 border-b border-kerala-border/40 pb-1.5">
+                <span className="text-kerala-muted">{h.label}{h.note && <span className="block text-[11px] text-kerala-muted/70">{h.note}</span>}</span>
+                <a href={`tel:${h.number.replace(/\s/g, "")}`} className="font-bold text-kerala-gold whitespace-nowrap">{h.number}</a>
+              </li>
             ))}
-          </select>
-        </div>
+          </ul>
+          <p className="text-[11px] text-kerala-muted mt-3">Numbers and links checked on {LINKS_CHECKED}. Some come from secondary sources, so confirm on the official site if a call doesn't connect.</p>
+        </details>
+      </section>
 
-        <div>
-          <label className="text-xs text-kerala-muted block mb-1">Filter by Problem Category</label>
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full bg-kerala-card border border-kerala-border rounded-xl px-3 py-2 text-sm text-kerala-white outline-none focus:border-kerala-green"
-          >
-            <option value="all">⚡ All Categories</option>
-            {Object.entries(CATEGORY_ICONS).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
+      {/* From the news */}
+      {news.length > 0 && (
+        <section className="space-y-4">
+          <div>
+            <h2 className="section-heading text-2xl flex items-center gap-2"><span className="live-dot" /> Civic stories in the news</h2>
+            <p className="text-xs md:text-sm text-kerala-muted mt-1">Everyday civic problems reported by the press, from The Hindu and Mathrubhumi.</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-3">
+            {news.map((n) => (
+              <Link key={n.id} href={`/news/${n.id}`} className="group glass-card-hover p-4 block">
+                <div className="text-[11px] text-kerala-gold mb-1">📍 {n.district} · {timeAgo(n.publishedAt)}</div>
+                <h3 className="font-newsreader text-base font-semibold text-kerala-white leading-snug group-hover:text-kerala-gold transition-colors">{n.title}</h3>
+                <div className="text-[11px] text-kerala-muted mt-1">{n.source}</div>
+              </Link>
             ))}
-          </select>
-        </div>
-
-        <div className="flex items-end">
-          <div className="bg-kerala-card/60 border border-kerala-border/60 rounded-xl px-4 py-2 w-full flex items-center justify-between text-xs text-kerala-muted">
-            <span>Active Issues: <strong className="text-kerala-white">{filtered.length}</strong></span>
-            <span>Resolved: <strong className="text-emerald-400">{issues.filter((i) => i.status === "resolved").length}</strong></span>
           </div>
-        </div>
-      </div>
-
-      {/* Issue List */}
-      <div className="space-y-4">
-        {loading && <p className="text-sm text-kerala-muted">Loading issues…</p>}
-        {loadError && <p role="alert" className="text-sm text-rose-400">Couldn't load issues. Please refresh.</p>}
-        {!loading && !loadError && filtered.length === 0 && (
-          <p className="text-sm text-kerala-muted">No issues match these filters.</p>
-        )}
-        {filtered.map((item) => {
-          const hasVoted = !!votedIds[item.id];
-          return (
-            <div
-              key={item.id}
-              className="glass-card p-5 md:p-6 transition-all hover:border-kerala-green/60 flex flex-col sm:flex-row gap-4 items-start justify-between"
-            >
-              <div className="flex-1 space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-kerala-border text-kerala-white font-medium">
-                    {CATEGORY_ICONS[item.category] || "📌 Issue"}
-                  </span>
-                  <span className="text-xs text-kerala-gold font-medium">
-                    📍 {item.subLocation || item.district}
-                  </span>
-                  <span
-                    className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ml-auto sm:ml-0 ${
-                      item.status === "resolved"
-                        ? "bg-emerald-900/40 text-emerald-300 border border-emerald-700/50"
-                        : item.status === "in-progress"
-                        ? "bg-amber-900/40 text-amber-300 border border-amber-700/50"
-                        : "bg-rose-900/40 text-rose-300 border border-rose-700/50"
-                    }`}
-                  >
-                    {item.status === "resolved" ? "✓ Resolved" : item.status === "in-progress" ? "⏳ In Progress" : "⚠️ Open"}
-                  </span>
-                </div>
-
-                <h2 className="font-newsreader text-xl font-semibold text-kerala-white">
-                  {item.title}
-                </h2>
-                <p className="text-sm text-kerala-muted leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-
-              {/* Upvote button */}
-              <button
-                onClick={() => handleUpvote(item.id)}
-                disabled={hasVoted}
-                className={`self-stretch sm:self-center flex sm:flex-col items-center justify-center gap-1.5 px-4 py-3 rounded-xl border transition-all ${
-                  hasVoted
-                    ? "bg-kerala-green/30 border-kerala-green text-emerald-300 cursor-default"
-                    : "bg-kerala-dark/60 hover:bg-kerala-green/20 border-kerala-border text-kerala-white hover:border-kerala-green cursor-pointer"
-                }`}
-              >
-                <span className="text-base sm:text-lg">▲</span>
-                <span className="text-xs font-bold">{item.upvotes}</span>
-                <span className="text-[10px] text-kerala-muted uppercase tracking-wider">
-                  {hasVoted ? "Upvoted" : "Upvote"}
-                </span>
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Modal for reporting */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-card max-w-lg w-full p-6 md:p-8 space-y-4 border-kerala-gold/40 shadow-gold relative">
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 text-kerala-muted hover:text-kerala-white text-lg"
-            >
-              ✕
-            </button>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">📢</span>
-              <h3 className="font-newsreader text-2xl font-bold text-kerala-white">
-                Report a Civic Grievance
-              </h3>
-            </div>
-            <p className="text-xs text-kerala-muted">
-              Submissions are published to the public dashboard and routed to district authorities and local civic forums.
-            </p>
-
-            <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-              <div>
-                <label className="text-xs text-kerala-muted block mb-1">Issue Title</label>
-                <input
-                  required
-                  minLength={5}
-                  maxLength={120}
-                  value={formTitle}
-                  onChange={(e) => setFormTitle(e.target.value)}
-                  placeholder="e.g., Streetlight blackout near Technopark Phase 3 gate"
-                  className="w-full bg-kerala-dark border border-kerala-border rounded-xl px-3 py-2 text-sm text-kerala-white outline-none focus:border-kerala-gold"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-kerala-muted block mb-1">District</label>
-                  <select
-                    value={formDistrict}
-                    onChange={(e) => setFormDistrict(e.target.value)}
-                    className="w-full bg-kerala-dark border border-kerala-border rounded-xl px-3 py-2 text-sm text-kerala-white outline-none focus:border-kerala-gold"
-                  >
-                    {DISTRICTS.map((d) => (
-                      <option key={d.slug} value={d.slug}>
-                        {d.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs text-kerala-muted block mb-1">Category</label>
-                  <select
-                    value={formCat}
-                    onChange={(e) => setFormCat(e.target.value)}
-                    className="w-full bg-kerala-dark border border-kerala-border rounded-xl px-3 py-2 text-sm text-kerala-white outline-none focus:border-kerala-gold"
-                  >
-                    {Object.entries(CATEGORY_ICONS).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-kerala-muted block mb-1">Specific Sub-Location / Ward</label>
-                <input
-                  value={formSubLoc}
-                  onChange={(e) => setFormSubLoc(e.target.value)}
-                  placeholder="e.g., Kazhakootam NH-66 Service Road, Ward 12"
-                  className="w-full bg-kerala-dark border border-kerala-border rounded-xl px-3 py-2 text-sm text-kerala-white outline-none focus:border-kerala-gold"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-kerala-muted block mb-1">Description & Details</label>
-                <textarea
-                  required
-                  minLength={10}
-                  maxLength={1000}
-                  rows={4}
-                  value={formDesc}
-                  onChange={(e) => setFormDesc(e.target.value)}
-                  placeholder="Describe the issue, hazards, duration, and how it impacts local residents..."
-                  className="w-full bg-kerala-dark border border-kerala-border rounded-xl px-3 py-2 text-sm text-kerala-white outline-none focus:border-kerala-gold"
-                />
-              </div>
-
-              {formError && (
-                <p role="alert" className="text-xs text-rose-400">{formError}</p>
-              )}
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-xl text-sm text-kerala-muted hover:text-kerala-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="btn-gold text-sm px-5 py-2 font-semibold shadow-gold"
-                >
-                  {isSubmitting ? "Submitting..." : "Publish Grievance"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        </section>
       )}
     </div>
   );

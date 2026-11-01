@@ -79,6 +79,8 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
     ...(dbFood.length === 0 && extraFood.length > 0 ? [{ key: "food", label: te("food"), icon: "🍲", n: extraFood.length }] : []),
     ...(dbCulture.length === 0 && extraCulture.length > 0 ? [{ key: "culture", label: te("culture"), icon: "🎭", n: extraCulture.length }] : []),
   ];
+  // food & restaurants live in the district page's FOOD section; everything else in the Places browser
+  const hub = (cat: string) => (cat === "food" || cat === "restaurant" ? `/district/${d.slug}#food` : `/district/${d.slug}?cat=${cat}#places`);
   const [exCat, setExCat] = useState<string>("");
   const activeCat = exCats.find((c) => c.key === exCat)?.key ?? exCats[0]?.key;
   const max = Math.max(1, ...Object.values(counts));
@@ -295,7 +297,7 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
               </Link>
             )}
             {activeCat && activeCat !== "events" && !((activeCat === "food" || activeCat === "culture") && (activeCat === "food" ? dbFood : dbCulture).length === 0) && (
-              <Link href={`/district/${d.slug}?cat=${activeCat}#places`} className="text-xs text-kerala-gold hover:underline font-semibold">
+              <Link href={hub(activeCat)} className="text-xs text-kerala-gold hover:underline font-semibold">
                 {te("seeAll", { count: ex!.counts[activeCat], name: d.name })} →
               </Link>
             )}
@@ -333,7 +335,7 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
               : [...(ex?.items[activeCat ?? ""] ?? []).map((p) => {
                   const cat = PLACE_CATEGORIES.find((c) => c.key === p.category);
                   return (
-                    <Link key={p.id} href={`/district/${d.slug}?cat=${p.category}#places`} className="glass-card-hover p-4 block">
+                    <Link key={p.id} href={hub(p.category)} className="glass-card-hover p-4 block">
                       <div className="text-[11px] text-emerald-300 font-semibold">{cat?.icon} {cat?.label}</div>
                       <div className="font-newsreader text-base font-bold text-kerala-white mt-1 leading-snug line-clamp-2">{locale === "ml" && p.malayalamName ? p.malayalamName : p.name}</div>
                       {(locale === "ml" ? p.name : p.malayalamName) && <div className="text-xs text-kerala-gold">{locale === "ml" ? p.name : p.malayalamName}</div>}
@@ -344,7 +346,7 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
                 }),
                   // profile names the researched entries don't cover (name-only cards)
                   ...((activeCat === "food" ? extraFood : activeCat === "culture" ? extraCulture : []).map((name) => (
-                    <Link key={"x-" + name} href={`/district/${d.slug}${(activeCat === "food" ? dbFood : dbCulture).length ? `?cat=${activeCat}#places` : `#${activeCat}`}`} className="glass-card-hover p-4 flex items-center gap-3">
+                    <Link key={"x-" + name} href={(activeCat === "food" ? dbFood : dbCulture).length ? hub(activeCat) : `/district/${d.slug}#${activeCat}`} className="glass-card-hover p-4 flex items-center gap-3">
                       <span className="text-2xl" aria-hidden>{activeCat === "food" ? "🍲" : "🎭"}</span>
                       <span className="font-newsreader text-base font-bold text-kerala-white leading-snug">{name}</span>
                     </Link>
