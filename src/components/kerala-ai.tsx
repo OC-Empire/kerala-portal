@@ -38,8 +38,8 @@ const KNOWLEDGE_BASE: KnowledgeTopic[] = [
   {
     keywords: ["food", "dish", "biryani", "sadhya", "cuisine", "taste"],
     reply: "Kerala gastronomy is legendary: Traditional 64-dish Aranmula Sadhya on plantain leaf, Thalassery Dum Biryani with Kaima rice, Karimeen Pollichathu wrapped in banana leaves, and Appam with rich coconut stew.",
-    linkText: "Browse Food & Culture Directory",
-    linkHref: "/food",
+    linkText: "Explore food & culture by district",
+    linkHref: "/#explore",
   },
   {
     keywords: ["civic", "problem", "complain", "pothole", "water", "light"],

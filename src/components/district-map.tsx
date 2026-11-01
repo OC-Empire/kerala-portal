@@ -66,6 +66,9 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
   const exCats = [
     ...PLACE_CATEGORIES.filter((c) => (ex?.counts[c.key] ?? 0) > 0).map((c) => ({ key: c.key, label: c.label, icon: c.icon, n: ex!.counts[c.key] })),
     ...(districtEvents.length ? [{ key: "events", label: te("events"), icon: "🎆", n: districtEvents.length }] : []),
+    // food & culture come from the district profile, so they are always there
+    { key: "food", label: te("food"), icon: "🍲", n: d.signatureFood.length },
+    { key: "culture", label: te("culture"), icon: "🎭", n: d.culturalIcons.length },
   ];
   const [exCat, setExCat] = useState<string>("");
   const activeCat = exCats.find((c) => c.key === exCat)?.key ?? exCats[0]?.key;
@@ -271,13 +274,18 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
 
       {/* Explore more: curated places & events for the focused district */}
       {exCats.length > 0 && (
-        <div className="mt-6 pt-5 border-t border-kerala-border/60 space-y-4" aria-live="polite">
+        <div id="explore" className="mt-6 pt-5 border-t border-kerala-border/60 space-y-4 scroll-mt-24" aria-live="polite">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h3 className="section-heading text-xl">{te("title", { name: d.name })}</h3>
               <p className="text-xs text-kerala-muted mt-0.5">{te("hint")}</p>
             </div>
-            {activeCat && activeCat !== "events" && (
+            {(activeCat === "food" || activeCat === "culture") && (
+              <Link href={`/district/${d.slug}#${activeCat}`} className="text-xs text-kerala-gold hover:underline font-semibold">
+                {te("seeAll", { count: activeCat === "food" ? d.signatureFood.length : d.culturalIcons.length, name: d.name })} →
+              </Link>
+            )}
+            {activeCat && activeCat !== "events" && activeCat !== "food" && activeCat !== "culture" && (
               <Link href={`/district/${d.slug}?cat=${activeCat}#places`} className="text-xs text-kerala-gold hover:underline font-semibold">
                 {te("seeAll", { count: ex!.counts[activeCat], name: d.name })} →
               </Link>
@@ -302,7 +310,14 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {activeCat === "events"
+            {activeCat === "food" || activeCat === "culture"
+              ? (activeCat === "food" ? d.signatureFood : d.culturalIcons).map((name) => (
+                  <Link key={name} href={`/district/${d.slug}#${activeCat}`} className="glass-card-hover p-4 flex items-center gap-3">
+                    <span className="text-2xl" aria-hidden>{activeCat === "food" ? "🍲" : "🎭"}</span>
+                    <span className="font-newsreader text-base font-bold text-kerala-white leading-snug">{name}</span>
+                  </Link>
+                ))
+              : activeCat === "events"
               ? districtEvents.slice(0, 6).map((e) => {
                   const m = e.category === "sports" ? sportMeta(e.sport) : eventMeta(e.category);
                   return (

@@ -36,6 +36,8 @@ export default async function DistrictPage({ params, searchParams }: { params: P
     { id: "places", label: t("navPlaces"), show: places.length > 0 },
     { id: "events", label: t("navEvents"), show: hasEvents },
     { id: "news", label: t("navNews"), show: news.length > 0 },
+    { id: "food", label: t("navFood"), show: true },
+    { id: "culture", label: t("navCulture"), show: true },
     { id: "civic", label: t("navCivic"), show: true },
   ].filter((x) => x.show);
 
@@ -250,7 +252,7 @@ export default async function DistrictPage({ params, searchParams }: { params: P
 
       {/* Food & Cultural Heritage */}
       <div className="grid md:grid-cols-2 gap-6">
-        <section className="glass-card p-6 space-y-4">
+        <section id="food" className="glass-card p-6 space-y-4 scroll-mt-32">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🍲</span>
             <h2 className="section-heading text-xl">Signature Cuisine</h2>
@@ -265,7 +267,7 @@ export default async function DistrictPage({ params, searchParams }: { params: P
           </ul>
         </section>
 
-        <section className="glass-card p-6 space-y-4">
+        <section id="culture" className="glass-card p-6 space-y-4 scroll-mt-32">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🎭</span>
             <h2 className="section-heading text-xl">Cultural Icons & Heritage</h2>

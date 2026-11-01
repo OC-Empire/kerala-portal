@@ -20,7 +20,6 @@ export const NAV_LINKS = [
   { href: "/news", key: "news", label: "News", icon: "📰" },
   { href: "/sports", key: "sports", label: "Sports", icon: "🏆" },
   { href: "/tourism", key: "tourism", label: "Tourism", icon: "✈️" },
-  { href: "/food", key: "food", label: "Food & Culture", icon: "🍽️" },
   { href: "/civic", key: "civic", label: "Civic Issues", icon: "🔧" },
   { href: "/government", key: "government", label: "Govt Services", icon: "🏛️" },
   { href: "/nri", key: "nri", label: "NRI Corner", icon: "🌍" },

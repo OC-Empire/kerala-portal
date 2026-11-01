@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   const has = (...vals: (string | undefined)[]) => vals.some((v) => v && norm(v).includes(q));
 
   const districts = DISTRICTS.filter((d) =>
-    has(d.name, d.malayalamName, d.capital, d.tagline, ...d.famousFor)
+    has(d.name, d.malayalamName, d.capital, d.tagline, ...d.famousFor, ...d.signatureFood, ...d.culturalIcons)
   )
     .slice(0, LIMIT)
     .map((d) => ({ slug: d.slug, name: d.name, malayalamName: d.malayalamName, tagline: d.tagline }));
