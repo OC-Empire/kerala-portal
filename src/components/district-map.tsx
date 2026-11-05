@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { motion, AnimatePresence } from "framer-motion";
 import { DISTRICTS } from "@/lib/districts";
 import { KERALA_GEO, KERALA_VIEWBOX } from "@/lib/kerala-geo";
 import { PLACE_CATEGORIES, eventMeta, sportMeta } from "@/lib/places";
@@ -165,6 +166,22 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
               );
             })}
 
+            {/* Civic pulse overlay — animated circles at district centers */}
+            {DISTRICTS.map((dist) => {
+              const g = KERALA_GEO[dist.slug];
+              if (!g) return null;
+              const n = counts[dist.slug] ?? 0;
+              if (n === 0) return null;
+              const intensity = n / max;
+              const r = 6 + intensity * 18;
+              return (
+                <g key={`pulse-${dist.slug}`} pointerEvents="none">
+                  <circle cx={g.cx} cy={g.cy} r={r} fill={`rgba(${theme.rgb},0.15)`} className="map-pulse" style={{ animationDelay: `${Math.random() * 2}s`, animationDuration: `${2.5 - intensity}s` }} />
+                  <circle cx={g.cx} cy={g.cy} r={r * 0.4} fill={`rgba(${theme.rgb},0.35)`} />
+                </g>
+              );
+            })}
+
             {/* highlight for the focused district (overlay, never intercepts the pointer) */}
             {KERALA_GEO[focus] && (
               <path
@@ -174,6 +191,7 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
                 strokeWidth={2.5}
                 strokeLinejoin="round"
                 pointerEvents="none"
+                className="map-glow"
                 style={{ filter: "drop-shadow(0 0 7px rgba(232,160,32,.55))" }}
               />
             )}
@@ -213,12 +231,20 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
 
         {/* Detail panel */}
         <div className="flex flex-col gap-4 min-w-0" aria-live="polite">
-          <div>
+          <AnimatePresence mode="wait">
+          <motion.div
+            key={focus}
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -16 }}
+            transition={{ duration: 0.3 }}
+          >
             <div className="text-[10px] uppercase tracking-wider text-kerala-gold font-semibold">{d.region} · {d.capital}</div>
             <div className="font-newsreader text-3xl md:text-4xl font-bold text-kerala-white leading-tight break-words">{d.name}</div>
             <div className="text-base text-kerala-muted">{d.malayalamName}</div>
             <p className="text-sm text-kerala-muted leading-relaxed mt-2 max-w-xl">{d.tagline}</p>
-          </div>
+          </motion.div>
+          </AnimatePresence>
 
           <div className="grid grid-cols-3 gap-2 text-center max-w-xl">
             <div className="rounded-xl bg-kerala-dark/50 border border-kerala-border/60 py-3">

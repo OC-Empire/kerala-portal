@@ -157,6 +157,64 @@
   .text-balance { text-wrap: balance; }
 }
 
+/* ── Futuristic dashboard animations ── */
+
+/* Map district pulse */
+@keyframes map-pulse {
+  0%   { opacity: 0.6; transform: scale(1); }
+  50%  { opacity: 0.2; transform: scale(1.8); }
+  100% { opacity: 0;   transform: scale(2.4); }
+}
+.map-pulse {
+  animation: map-pulse 2.5s ease-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+/* Map glow breathing */
+@keyframes map-glow {
+  0%, 100% { filter: drop-shadow(0 0 7px rgba(232,160,32,.55)); }
+  50%      { filter: drop-shadow(0 0 14px rgba(232,160,32,.8)); }
+}
+.map-glow {
+  animation: map-glow 2s ease-in-out infinite;
+}
+
+/* KPI card scanline sweep */
+@keyframes scanline {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
+.kpi-scanline {
+  background: linear-gradient(180deg, transparent, rgba(232,160,32,0.06), transparent);
+  height: 50%;
+  animation: scanline 3s ease-in-out infinite;
+}
+
+/* Glow border animation for glass cards */
+@keyframes border-glow {
+  0%, 100% { border-color: rgba(30,58,95,1); }
+  50%      { border-color: rgba(27,107,58,0.5); }
+}
+.glass-card-glow {
+  animation: border-glow 4s ease-in-out infinite;
+}
+
+/* Ambient floating particles (CSS-only, lightweight) */
+@keyframes float-up {
+  0%   { transform: translateY(0) scale(1); opacity: 0.4; }
+  100% { transform: translateY(-60px) scale(0.5); opacity: 0; }
+}
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--kerala-gold);
+  animation: float-up 4s ease-out infinite;
+  pointer-events: none;
+}
+
 /* Accessibility: visible focus rings for keyboard navigation */
 :focus-visible {
   outline: 3px solid var(--kerala-gold);
@@ -181,5 +239,12 @@
   .btn-primary:hover,
   .btn-gold:hover {
     transform: none;
+  }
+  .map-pulse,
+  .map-glow,
+  .kpi-scanline,
+  .glass-card-glow,
+  .particle {
+    animation: none !important;
   }
 }
