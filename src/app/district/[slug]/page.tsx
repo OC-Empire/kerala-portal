@@ -11,6 +11,7 @@ import PlacesBrowser from "@/components/places-browser";
 import DistrictFood from "@/components/district-food";
 import EventCard from "@/components/event-card";
 import NewsImage from "@/components/news-image";
+import DistrictGraph from "@/components/district-graph";
 import { timeAgo } from "@/lib/utils";
 import { uncovered } from "@/lib/dedupe";
 
@@ -32,7 +33,6 @@ export default async function DistrictPage({ params, searchParams }: { params: P
   const news = allNews.filter((n) => n.districtSlug === slug).slice(0, 4);
   const issues = civic.topByDistrict[slug] ?? [];
   const hasEvents = upcoming.length + undated.length > 0;
-  // researched food/culture entries live in the Places browser; keep the profile lists only for names they don't cover
   const extraFood = uncovered(d.signatureFood, places.filter((p) => p.category === "food").map((p) => p.name));
   const extraCulture = uncovered(d.culturalIcons, places.filter((p) => p.category === "culture").map((p) => p.name));
   const dishes = places.filter((p) => p.category === "food");
@@ -42,7 +42,7 @@ export default async function DistrictPage({ params, searchParams }: { params: P
   const cultureMore = places.some((p) => p.category === "culture");
 
   const sections = [
-    { id: "overview", label: t("navOverview"), show: true },
+    { id: "explore", label: "Explore", show: true },
     { id: "food", label: t("navFood"), show: hasFood },
     { id: "places", label: t("navPlaces"), show: browsePlaces.length > 0 },
     { id: "events", label: t("navEvents"), show: hasEvents },
@@ -53,45 +53,26 @@ export default async function DistrictPage({ params, searchParams }: { params: P
 
   return (
     <div className="space-y-10">
-      {/* District Hero */}
-      <div id="overview" className={`glass-card p-6 md:p-10 relative overflow-hidden bg-gradient-to-br ${d.accentBg}`}>
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
-          <Link href="/districts" className="text-kerala-muted text-sm hover:text-kerala-white transition-colors">
-            ← All 14 Districts
-          </Link>
-          <span className="text-xs uppercase tracking-wider px-3 py-1 rounded-full bg-white/10 text-kerala-gold font-semibold">
-            {d.region.toUpperCase()} KERALA REGION
-          </span>
-        </div>
-
-        <div className="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-4 mt-2">
-          <h1 className="font-newsreader text-4xl md:text-6xl font-bold text-kerala-white">
-            {d.name}
-          </h1>
-          <span className="font-malayalam text-2xl md:text-3xl text-kerala-gold font-semibold">
-            {d.malayalamName}
-          </span>
-        </div>
-        <p className="text-kerala-muted text-lg mt-2 max-w-2xl">{d.tagline}</p>
-
-        {/* Quick District Metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8">
-          {[
-            { label: "District Capital", value: d.capital, icon: "🏛️" },
-            { label: "Population", value: d.population, icon: "👥" },
-            { label: "Land Area", value: d.area, icon: "🗺️" },
-            { label: "Prime Sub-Hubs", value: `${d.subLocations.length} Key Centers`, icon: "📍" },
-          ].map((s) => (
-            <div key={s.label} className="bg-kerala-card/80 border border-kerala-border/60 rounded-xl p-4">
-              <div className="text-lg mb-1">{s.icon}</div>
-              <div className="text-xs text-kerala-muted">{s.label}</div>
-              <div className="text-base font-semibold text-kerala-white mt-0.5">{s.value}</div>
-            </div>
-          ))}
-        </div>
+      {/* Back link + region tag */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <Link href="/districts" className="text-kerala-muted text-sm hover:text-kerala-white transition-colors">
+          ← All Districts
+        </Link>
+        <span className="text-[10px] uppercase tracking-[0.2em] px-3 py-1 rounded-full font-bold" style={{ background: "rgba(232,160,32,0.06)", color: "#E8A020", border: "1px solid rgba(232,160,32,0.15)" }}>
+          {d.region} Kerala
+        </span>
       </div>
 
-      {/* Section nav: only sections that exist */}
+      {/* ── Interactive Graph Hero — the main attraction ── */}
+      <section id="explore" className="scroll-mt-20">
+        <DistrictGraph district={d} initialCat={initialCat} places={places.map((p) => ({
+          name: p.name, category: p.category, description: p.description,
+          address: p.address, imageUrl: p.imageUrl, website: p.website,
+          phone: p.phone, hours: p.hours, fee: p.fee,
+        }))} />
+      </section>
+
+      {/* Section nav */}
       <nav aria-label={t("sections")} className="sticky top-16 z-30 -mt-4 overflow-x-auto">
         <div className="inline-flex gap-1 rounded-full border border-kerala-border bg-kerala-dark/90 backdrop-blur p-1 text-xs">
           {sections.map((x) => (
@@ -151,6 +132,23 @@ export default async function DistrictPage({ params, searchParams }: { params: P
         </section>
       )}
 
+      {extraCulture.length > 0 && (
+        <section id="culture" className="glass-card p-6 space-y-4 scroll-mt-32">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🎭</span>
+            <h2 className="section-heading text-xl">{cultureMore ? t("moreCulture") : "Cultural Icons & Heritage"}</h2>
+          </div>
+          <p className="text-xs text-kerala-muted">Ritual arts, folklore, and historical movements born in this soil.</p>
+          <ul className="space-y-2.5">
+            {extraCulture.map((c) => (
+              <li key={c} className="bg-kerala-dark/60 border border-kerala-border/60 rounded-xl p-3 text-sm text-kerala-white flex items-center gap-2">
+                <span className="text-kerala-light">✦</span> {c}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section id="civic" className="space-y-4 scroll-mt-32">
         <h2 className="section-heading">{t("civicHeading", { name: d.name })}</h2>
         {issues.length > 0 ? (
@@ -169,121 +167,6 @@ export default async function DistrictPage({ params, searchParams }: { params: P
         )}
         <Link href="/civic" className="btn-primary inline-block text-sm font-semibold px-5 py-2.5">{t("reportIssue")}</Link>
       </section>
-
-      {/* Sub-Locations & Localities Deep Dive (Hyperlocal section) */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="section-heading">Prime Hubs & Localities in {d.name}</h2>
-            <p className="text-xs md:text-sm text-kerala-muted">
-              Hyperlocal breakdown of major IT corridors, coastal ports, hill towns & cultural centers.
-            </p>
-          </div>
-          <span className="text-xs px-3 py-1 rounded-full bg-kerala-green/20 text-emerald-400 font-medium">
-            Granular Ward & Hub Layer
-          </span>
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {d.subLocations.map((sub) => (
-            <div
-              key={sub.id}
-              className="glass-card-hover p-5 border-kerala-border hover:border-kerala-gold/60 flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-semibold uppercase px-2 py-0.5 rounded bg-white/5 text-kerala-gold">
-                    {sub.type.replace("_", " ")}
-                  </span>
-                  <span className="text-xs text-rose-400">
-                    ⚠️ {sub.activeIssuesCount} issues
-                  </span>
-                </div>
-                <h3 className="font-newsreader text-xl font-bold text-kerala-white mt-2">
-                  {sub.name}
-                </h3>
-                <div className="text-xs text-kerala-muted font-malayalam">{sub.malayalamName}</div>
-                <p className="text-xs text-kerala-muted mt-2 italic">{sub.tagline}</p>
-
-                <div className="mt-4 space-y-1">
-                  <span className="text-[11px] font-semibold text-kerala-light uppercase">Key Centers:</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {sub.highlights.map((h) => (
-                      <span key={h} className="text-[11px] px-2 py-0.5 rounded bg-kerala-dark/80 text-kerala-muted">
-                        • {h}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5 pt-3 border-t border-kerala-border/40 flex items-center justify-between">
-                <Link
-                  href={`/civic?district=${d.slug}`}
-                  className="text-xs text-kerala-gold hover:underline"
-                >
-                  View Local Issues →
-                </Link>
-                <Link
-                  href={`/tourism`}
-                  className="text-xs text-kerala-light hover:underline"
-                >
-                  Explore Spots →
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Famous For & Badges */}
-      <section className="glass-card p-6">
-        <h2 className="section-heading text-xl mb-3">District Identity & GI Hallmarks</h2>
-        <div className="flex flex-wrap gap-2">
-          {d.famousFor.map((f) => (
-            <span key={f} className="px-3.5 py-1.5 rounded-full bg-kerala-green/20 border border-kerala-green/40 text-kerala-light text-sm font-medium">
-              ★ {f}
-            </span>
-          ))}
-        </div>
-      </section>
-
-      {/* Tourist Attractions */}
-      <section className="space-y-4">
-        <h2 className="section-heading">Must-Visit Destinations in {d.name}</h2>
-        <div className="grid sm:grid-cols-2 gap-4">
-          {d.touristSpots.map((t) => (
-            <div key={t.name} className="glass-card-hover p-6">
-              <div className="text-3xl mb-3">{t.emoji}</div>
-              <h3 className="font-newsreader text-xl font-semibold text-kerala-white">{t.name}</h3>
-              <p className="text-sm text-kerala-muted mt-2 leading-relaxed">{t.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Food & Cultural Heritage */}
-      {extraCulture.length > 0 && (
-      <div className="grid md:grid-cols-2 gap-6">
-
-        {extraCulture.length > 0 && (
-        <section id="culture" className="glass-card p-6 space-y-4 scroll-mt-32">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🎭</span>
-            <h2 className="section-heading text-xl">{cultureMore ? t("moreCulture") : "Cultural Icons & Heritage"}</h2>
-          </div>
-          <p className="text-xs text-kerala-muted">Ritual arts, folklore, and historical movements born in this soil.</p>
-          <ul className="space-y-2.5">
-            {extraCulture.map((c) => (
-              <li key={c} className="bg-kerala-dark/60 border border-kerala-border/60 rounded-xl p-3 text-sm text-kerala-white flex items-center gap-2">
-                <span className="text-kerala-light">✦</span> {c}
-              </li>
-            ))}
-          </ul>
-        </section>
-        )}
-      </div>
-      )}
     </div>
   );
 }
