@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import type { District } from "@/lib/districts";
+import { MapPin, Palmtree, UtensilsCrossed, Palette, X } from "lucide-react";
 
 /* ─── palette ─── */
 
@@ -12,23 +13,26 @@ const R: Record<string, { hue: string; g: string; bg: string; b: string }> = {
   north:   { hue: "#DA77F2", g: "0 0 30px rgba(218,119,242,0.4), 0 0 80px rgba(218,119,242,0.12)", bg: "rgba(218,119,242,0.06)", b: "rgba(218,119,242,0.3)" },
 };
 
-const C: Record<string, { hue: string; g: string; bg: string; b: string; icon: string; label: string }> = {
-  sub_location: { hue: "#38BDF8", icon: "\u{1F4CD}", label: "Hub",     g: "0 0 20px rgba(56,189,248,0.35)",  bg: "rgba(56,189,248,0.07)", b: "rgba(56,189,248,0.3)" },
-  tourist:      { hue: "#FBBF24", icon: "\u{1F3D6}️", label: "Spot",    g: "0 0 20px rgba(251,191,36,0.35)",  bg: "rgba(251,191,36,0.07)", b: "rgba(251,191,36,0.3)" },
-  food:         { hue: "#FB7185", icon: "\u{1F35B}", label: "Food",    g: "0 0 20px rgba(251,113,133,0.35)", bg: "rgba(251,113,133,0.07)", b: "rgba(251,113,133,0.3)" },
-  culture:      { hue: "#C084FC", icon: "\u{1F3AD}", label: "Culture", g: "0 0 20px rgba(192,132,252,0.35)", bg: "rgba(192,132,252,0.07)", b: "rgba(192,132,252,0.3)" },
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  sub_location: MapPin, tourist: Palmtree, food: UtensilsCrossed, culture: Palette,
+};
+const C: Record<string, { hue: string; g: string; bg: string; b: string; label: string }> = {
+  sub_location: { hue: "#38BDF8", label: "Hub",     g: "0 0 20px rgba(56,189,248,0.35)",  bg: "rgba(56,189,248,0.07)", b: "rgba(56,189,248,0.3)" },
+  tourist:      { hue: "#FBBF24", label: "Spot",    g: "0 0 20px rgba(251,191,36,0.35)",  bg: "rgba(251,191,36,0.07)", b: "rgba(251,191,36,0.3)" },
+  food:         { hue: "#FB7185", label: "Food",    g: "0 0 20px rgba(251,113,133,0.35)", bg: "rgba(251,113,133,0.07)", b: "rgba(251,113,133,0.3)" },
+  culture:      { hue: "#C084FC", label: "Culture", g: "0 0 20px rgba(192,132,252,0.35)", bg: "rgba(192,132,252,0.07)", b: "rgba(192,132,252,0.3)" },
 };
 
 /* ─── children ─── */
 
-interface Child { id: string; label: string; sub?: string; type: string; emoji?: string; desc?: string; hl?: string[]; issues?: number }
+interface Child { id: string; label: string; sub?: string; type: string; desc?: string; hl?: string[]; issues?: number }
 
 function getChildren(d: District): Child[] {
   const o: Child[] = [];
   d.subLocations.forEach((s) => o.push({ id: `s-${s.id}`, label: s.name, sub: s.malayalamName, type: "sub_location", desc: s.tagline, hl: s.highlights, issues: s.activeIssuesCount }));
-  d.touristSpots.forEach((t) => o.push({ id: `t-${t.name}`, label: t.name, type: "tourist", emoji: t.emoji, desc: t.description }));
-  d.signatureFood.forEach((f) => o.push({ id: `f-${f}`, label: f, type: "food", emoji: "\u{1F35B}" }));
-  d.culturalIcons.forEach((c) => o.push({ id: `c-${c}`, label: c, type: "culture", emoji: "\u{1F3AD}" }));
+  d.touristSpots.forEach((t) => o.push({ id: `t-${t.name}`, label: t.name, type: "tourist", desc: t.description }));
+  d.signatureFood.forEach((f) => o.push({ id: `f-${f}`, label: f, type: "food" }));
+  d.culturalIcons.forEach((c) => o.push({ id: `c-${c}`, label: c, type: "culture" }));
   return o;
 }
 
@@ -274,7 +278,7 @@ export default function DistrictsOverviewGraph({ districts }: { districts: Distr
                 >
                   <div className="rounded-full w-full h-full flex items-center justify-center" style={{ background: `radial-gradient(circle at 40% 35%, ${cm.bg}, rgba(10,22,40,0.9))` }}>
                     <span className="text-center leading-tight px-1" style={{ fontSize: mob ? 8 : 10 }}>
-                      {k.emoji && <span className="block text-sm mb-0.5">{k.emoji}</span>}
+                      {(() => { const I = CATEGORY_ICONS[k.type]; return I ? <I className="w-4 h-4 mb-0.5 mx-auto" aria-hidden /> : null; })()}
                       <span className="text-kerala-white/85 font-medium line-clamp-2">
                         {k.label.length > (mob ? 12 : 16) ? k.label.slice(0, mob ? 10 : 14) + "…" : k.label}
                       </span>
@@ -295,12 +299,12 @@ export default function DistrictsOverviewGraph({ districts }: { districts: Distr
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div>
                             <span className="inline-block px-2.5 py-0.5 rounded-full text-[9px] uppercase tracking-[0.18em] font-bold" style={{ background: cm.bg, color: cm.hue, border: `1px solid ${cm.b}` }}>
-                              {cm.icon} {cm.label}
+                              {(() => { const I = CATEGORY_ICONS[k.type]; return I ? <I className="w-3 h-3 inline" aria-hidden /> : null; })()} {cm.label}
                             </span>
                             <h4 className="font-newsreader text-lg font-bold text-kerala-white mt-2 leading-tight">{k.label}</h4>
                             {k.sub && <span className="text-[10px] font-malayalam text-kerala-muted/70">{k.sub}</span>}
                           </div>
-                          <button onClick={(e) => { e.stopPropagation(); setLeafId(null); }} aria-label="Close details" className="text-kerala-muted hover:text-kerala-white text-sm shrink-0 rounded-full w-6 h-6 flex items-center justify-center hover:bg-white/5 transition-colors mt-1 outline-none focus-visible:ring-2 focus-visible:ring-kerala-gold">{"✕"}</button>
+                          <button onClick={(e) => { e.stopPropagation(); setLeafId(null); }} aria-label="Close details" className="text-kerala-muted hover:text-kerala-white text-sm shrink-0 rounded-full w-6 h-6 flex items-center justify-center hover:bg-white/5 transition-colors mt-1 outline-none focus-visible:ring-2 focus-visible:ring-kerala-gold"><X className="w-3.5 h-3.5" /></button>
                         </div>
                         {k.desc && <p className="text-[11px] text-kerala-muted/80 leading-relaxed">{k.desc}</p>}
                         {k.hl && k.hl.length > 0 && (

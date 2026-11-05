@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { PLACE_CATEGORIES, placeMeta } from "@/lib/places";
+import { getIcon } from "@/lib/icons";
 import { safeHref } from "@/lib/safe-url";
 import NewsImage from "@/components/news-image";
 
@@ -46,7 +47,7 @@ export default function PlacesBrowser({ places, initialCat }: { places: PlaceVie
         {PLACE_CATEGORIES.filter((c) => counts.has(c.key)).map((c) => (
           <button key={c.key} role="tab" aria-selected={cat === c.key} onClick={() => setCat(c.key)}
             className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${cat === c.key ? "bg-kerala-green text-white" : "bg-kerala-card text-kerala-muted hover:text-kerala-white"}`}>
-            {c.icon} {c.label} · {counts.get(c.key)}
+            {(() => { const I = getIcon(c.icon); return <I className="w-3.5 h-3.5 inline" aria-hidden />; })()} {c.label} · {counts.get(c.key)}
           </button>
         ))}
       </div>

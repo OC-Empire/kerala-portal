@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Search } from "lucide-react";
 
 type Results = {
   districts: { slug: string; name: string; malayalamName: string; tagline: string }[];
@@ -79,7 +80,7 @@ export default function SearchBox() {
   return (
     <div ref={boxRef} className="relative w-full max-w-xl mx-auto text-left">
       <div className="flex items-center gap-2 rounded-2xl border border-kerala-border bg-kerala-dark/70 px-4 py-3 focus-within:border-kerala-gold/70 focus-within:shadow-[0_0_0_3px_rgba(232,160,32,0.15)] transition-all">
-        <span aria-hidden>🔍</span>
+        <Search className="w-4 h-4 text-kerala-muted shrink-0" aria-hidden />
         <input
           ref={inputRef}
           value={q}

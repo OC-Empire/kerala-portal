@@ -5,6 +5,8 @@ import CivicBoard from "@/components/civic-board";
 import { getLiveNews, type Locale } from "@/lib/feeds";
 import { CIVIC_AUTHORITIES, HELPLINES, LINKS_CHECKED } from "@/lib/gov-data";
 import { timeAgo } from "@/lib/utils";
+import { getIcon } from "@/lib/icons";
+import { Phone, MapPin } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Civic Issues — Kerala Portal",
@@ -34,13 +36,13 @@ export default async function CivicPage() {
           {CIVIC_AUTHORITIES.map((a) => (
             <article key={a.id} className="glass-card p-5 flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-2xl" aria-hidden>{a.icon}</span>
+                {(() => { const I = getIcon(a.icon); return <I className="w-6 h-6 text-kerala-gold shrink-0" aria-hidden />; })()}
                 <h3 className="font-newsreader text-lg font-bold text-kerala-white leading-snug">{a.issue}</h3>
               </div>
               <p className="text-sm text-kerala-muted"><strong className="text-kerala-white font-semibold">Who: </strong>{a.who}</p>
               <p className="text-sm text-kerala-muted"><strong className="text-kerala-white font-semibold">How: </strong>{a.how}</p>
               <div className="flex flex-wrap items-center gap-3 mt-auto pt-2">
-                {a.number && <a href={`tel:${a.number}`} className="btn-gold text-xs font-semibold px-3 py-1.5">📞 {a.number}</a>}
+                {a.number && <a href={`tel:${a.number}`} className="btn-gold text-xs font-semibold px-3 py-1.5 inline-flex items-center gap-1"><Phone className="w-3 h-3" aria-hidden /> {a.number}</a>}
                 {a.url && <a href={a.url} target="_blank" rel="noopener noreferrer" className="text-xs text-kerala-light hover:underline font-semibold">Official site ↗</a>}
               </div>
             </article>
@@ -70,7 +72,7 @@ export default async function CivicPage() {
           <div className="grid md:grid-cols-2 gap-3">
             {news.map((n) => (
               <Link key={n.id} href={`/news/${n.id}`} className="group glass-card-hover p-4 block">
-                <div className="text-[11px] text-kerala-gold mb-1">📍 {n.district} · {timeAgo(n.publishedAt)}</div>
+                <div className="text-[11px] text-kerala-gold mb-1 flex items-center gap-1"><MapPin className="w-3 h-3" aria-hidden /> {n.district} · {timeAgo(n.publishedAt)}</div>
                 <h3 className="font-newsreader text-base font-semibold text-kerala-white leading-snug group-hover:text-kerala-gold transition-colors">{n.title}</h3>
                 <div className="text-[11px] text-kerala-muted mt-1">{n.source}</div>
               </Link>

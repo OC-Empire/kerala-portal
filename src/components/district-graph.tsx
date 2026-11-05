@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import type { District } from "@/lib/districts";
+import { MapPin, Palmtree, UtensilsCrossed, Palette, X, Landmark as LandmarkIcon, Users, Map as MapIcon, AlertTriangle, type LucideIcon } from "lucide-react";
 
 /* ─── types ─── */
 
@@ -20,16 +21,19 @@ export interface GraphPlace {
 
 /* ─── palette ─── */
 
-const M: Record<string, { hue: string; g: string; bg: string; b: string; icon: string; label: string }> = {
-  sub_location: { hue: "#38BDF8", icon: "\u{1F4CD}", label: "Hubs",    g: "0 0 28px rgba(56,189,248,0.4), 0 0 60px rgba(56,189,248,0.12)", bg: "rgba(56,189,248,0.07)", b: "rgba(56,189,248,0.3)" },
-  tourist:      { hue: "#FBBF24", icon: "\u{1F3D6}️", label: "Spots",   g: "0 0 28px rgba(251,191,36,0.4), 0 0 60px rgba(251,191,36,0.12)", bg: "rgba(251,191,36,0.07)", b: "rgba(251,191,36,0.3)" },
-  food:         { hue: "#FB7185", icon: "\u{1F35B}", label: "Food",    g: "0 0 28px rgba(251,113,133,0.4), 0 0 60px rgba(251,113,133,0.12)", bg: "rgba(251,113,133,0.07)", b: "rgba(251,113,133,0.3)" },
-  culture:      { hue: "#C084FC", icon: "\u{1F3AD}", label: "Culture", g: "0 0 28px rgba(192,132,252,0.4), 0 0 60px rgba(192,132,252,0.12)", bg: "rgba(192,132,252,0.07)", b: "rgba(192,132,252,0.3)" },
+const TYPE_ICONS: Record<string, LucideIcon> = {
+  sub_location: MapPin, tourist: Palmtree, food: UtensilsCrossed, culture: Palette,
+};
+const M: Record<string, { hue: string; g: string; bg: string; b: string; label: string }> = {
+  sub_location: { hue: "#38BDF8", label: "Hubs",    g: "0 0 28px rgba(56,189,248,0.4), 0 0 60px rgba(56,189,248,0.12)", bg: "rgba(56,189,248,0.07)", b: "rgba(56,189,248,0.3)" },
+  tourist:      { hue: "#FBBF24", label: "Spots",   g: "0 0 28px rgba(251,191,36,0.4), 0 0 60px rgba(251,191,36,0.12)", bg: "rgba(251,191,36,0.07)", b: "rgba(251,191,36,0.3)" },
+  food:         { hue: "#FB7185", label: "Food",    g: "0 0 28px rgba(251,113,133,0.4), 0 0 60px rgba(251,113,133,0.12)", bg: "rgba(251,113,133,0.07)", b: "rgba(251,113,133,0.3)" },
+  culture:      { hue: "#C084FC", label: "Culture", g: "0 0 28px rgba(192,132,252,0.4), 0 0 60px rgba(192,132,252,0.12)", bg: "rgba(192,132,252,0.07)", b: "rgba(192,132,252,0.3)" },
 };
 
 /* ─── data helpers ─── */
 
-interface Leaf { id: string; label: string; sub?: string; emoji?: string; desc?: string; hl?: string[]; issues?: number; href?: string; type: string; place?: GraphPlace }
+interface Leaf { id: string; label: string; sub?: string; desc?: string; hl?: string[]; issues?: number; href?: string; type: string; place?: GraphPlace }
 interface Cat { type: string; items: Leaf[] }
 interface CatLink { a: string; b: string; count: number }
 
@@ -50,11 +54,11 @@ function buildCats(d: District, places: GraphPlace[]): Cat[] {
   const out: Cat[] = [];
   const subs = d.subLocations.map((s) => ({ id: `s-${s.id}`, label: s.name, sub: s.malayalamName, type: "sub_location", desc: s.tagline, hl: s.highlights, issues: s.activeIssuesCount, href: `/civic?district=${d.slug}`, place: match(s.name) }));
   if (subs.length) out.push({ type: "sub_location", items: subs });
-  const spots = d.touristSpots.map((t) => ({ id: `t-${t.name}`, label: t.name, type: "tourist", emoji: t.emoji, desc: match(t.name)?.description || t.description, place: match(t.name) }));
+  const spots = d.touristSpots.map((t) => ({ id: `t-${t.name}`, label: t.name, type: "tourist", desc: match(t.name)?.description || t.description, place: match(t.name) }));
   if (spots.length) out.push({ type: "tourist", items: spots });
-  const food = d.signatureFood.map((f) => ({ id: `f-${f}`, label: f, type: "food", emoji: "\u{1F35B}", desc: match(f, "food")?.description ?? undefined, place: match(f, "food") }));
+  const food = d.signatureFood.map((f) => ({ id: `f-${f}`, label: f, type: "food", desc: match(f, "food")?.description ?? undefined, place: match(f, "food") }));
   if (food.length) out.push({ type: "food", items: food });
-  const cult = d.culturalIcons.map((c) => ({ id: `c-${c}`, label: c, type: "culture", emoji: "\u{1F3AD}", desc: match(c, "culture")?.description ?? undefined, place: match(c, "culture") }));
+  const cult = d.culturalIcons.map((c) => ({ id: `c-${c}`, label: c, type: "culture", desc: match(c, "culture")?.description ?? undefined, place: match(c, "culture") }));
   if (cult.length) out.push({ type: "culture", items: cult });
   return out;
 }
@@ -296,7 +300,7 @@ export default function DistrictGraph({ district, places = [], initialCat }: { d
                   }}>
                     {openCat && openC ? (
                       <>
-                        <span className="text-lg">{M[openC.type].icon}</span>
+                        {(() => { const I = TYPE_ICONS[openC.type] ?? MapPin; return <span style={{ color: M[openC.type].hue }}><I className="w-5 h-5" aria-hidden="true" /></span>; })()}
                         <span className="font-semibold text-kerala-white mt-0.5" style={{ fontSize: mob ? 8 : 11 }}>{M[openC.type].label}</span>
                       </>
                     ) : (
@@ -334,7 +338,7 @@ export default function DistrictGraph({ district, places = [], initialCat }: { d
                       style={{ width: catSize, height: catSize, padding: 2, border: `1px solid ${m.b}`, transition: "all 0.4s cubic-bezier(0.32,0.72,0,1)" }}
                     >
                       <div className="rounded-full w-full h-full flex flex-col items-center justify-center text-center" style={{ background: `radial-gradient(circle at 40% 35%, ${m.bg}, rgba(10,22,40,0.9))` }}>
-                        <span className="text-xl mb-0.5">{m.icon}</span>
+                        {(() => { const I = TYPE_ICONS[cat.type] ?? MapPin; return <span style={{ color: m.hue }}><I className="w-5 h-5 mb-0.5" aria-hidden="true" /></span>; })()}
                         <span className="font-semibold text-kerala-white/90" style={{ fontSize: mob ? 8 : 10 }}>{m.label}</span>
                         <span className="text-[7px] text-kerala-muted/50">{cat.items.length}</span>
                       </div>
@@ -372,7 +376,7 @@ export default function DistrictGraph({ district, places = [], initialCat }: { d
                     >
                       <div className="rounded-full w-full h-full flex items-center justify-center" style={{ background: `radial-gradient(circle at 40% 35%, ${cm.bg}, rgba(10,22,40,0.9))` }}>
                         <span className="text-center leading-tight px-1" style={{ fontSize: mob ? 7 : 9 }}>
-                          {leaf.emoji && <span className="block text-sm mb-0.5">{leaf.emoji}</span>}
+                          {(() => { const I = TYPE_ICONS[leaf.type]; return I ? <span className="block mb-0.5 mx-auto w-fit" style={{ color: cm.hue }}><I className="w-3.5 h-3.5" aria-hidden="true" /></span> : null; })()}
                           <span className="text-kerala-white/85 font-medium line-clamp-2">
                             {leaf.label.length > (mob ? 10 : 14) ? leaf.label.slice(0, mob ? 8 : 12) + "…" : leaf.label}
                           </span>
@@ -411,13 +415,13 @@ export default function DistrictGraph({ district, places = [], initialCat }: { d
                   <p className="text-sm text-kerala-muted max-w-2xl">{district.tagline}</p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                      { label: "Capital", value: district.capital, icon: "\u{1F3DB}️" },
-                      { label: "Population", value: district.population, icon: "\u{1F465}" },
-                      { label: "Area", value: district.area, icon: "\u{1F5FA}️" },
-                      { label: "Sub-Hubs", value: `${district.subLocations.length}`, icon: "\u{1F4CD}" },
+                      { label: "Capital", value: district.capital, Icon: LandmarkIcon },
+                      { label: "Population", value: district.population, Icon: Users },
+                      { label: "Area", value: district.area, Icon: MapIcon },
+                      { label: "Sub-Hubs", value: `${district.subLocations.length}`, Icon: MapPin },
                     ].map((s) => (
                       <div key={s.label} className="rounded-xl p-3" style={{ background: "rgba(22,32,53,0.6)", border: "1px solid rgba(30,58,95,0.3)" }}>
-                        <span className="text-base">{s.icon}</span>
+                        <s.Icon className="w-4 h-4 text-kerala-gold" aria-hidden />
                         <div className="text-[10px] text-kerala-muted mt-1">{s.label}</div>
                         <div className="text-sm font-semibold text-kerala-white">{s.value}</div>
                       </div>
@@ -449,7 +453,7 @@ export default function DistrictGraph({ district, places = [], initialCat }: { d
               {openCat && openC && !selectedLeaf && (
                 <div className="p-5 md:p-7 space-y-4" style={{ animation: an("dgFade 0.3s ease") }}>
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">{M[openC.type].icon}</span>
+                    {(() => { const I = TYPE_ICONS[openC.type] ?? MapPin; return <span style={{ color: M[openC.type].hue }}><I className="w-7 h-7" aria-hidden="true" /></span>; })()}
                     <div>
                       <h3 className="font-newsreader text-xl md:text-2xl font-bold text-kerala-white">{M[openC.type].label} in {district.name}</h3>
                       <p className="text-xs text-kerala-muted mt-0.5">{openC.items.length} items &mdash; click any node above for details</p>
@@ -460,7 +464,7 @@ export default function DistrictGraph({ district, places = [], initialCat }: { d
                       <button key={item.id} className="text-xs px-3 py-1.5 rounded-full font-medium cursor-pointer transition-all duration-300 hover:scale-105 outline-none focus-visible:ring-2 focus-visible:ring-kerala-gold" style={{ background: M[openC.type].bg, color: M[openC.type].hue, border: `1px solid ${M[openC.type].b}` }}
                         onClick={() => setLeafId(item.id)}
                         aria-label={`View details for ${item.label}`}>
-                        {item.emoji ? `${item.emoji} ` : ""}{item.label}
+                        {(() => { const I = TYPE_ICONS[openC.type]; return I ? <><I className="w-3 h-3 inline" aria-hidden /> </> : null; })()}{item.label}
                       </button>
                     ))}
                   </div>
@@ -473,10 +477,10 @@ export default function DistrictGraph({ district, places = [], initialCat }: { d
                     <div className="space-y-3 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-[0.15em] font-bold" style={{ background: M[openC.type].bg, color: M[openC.type].hue, border: `1px solid ${M[openC.type].b}` }}>
-                          {M[openC.type].icon} {M[openC.type].label}
+                          {(() => { const I = TYPE_ICONS[openC.type] ?? MapPin; return <I className="w-3 h-3 inline" aria-hidden />; })()} {M[openC.type].label}
                         </span>
                         {selectedLeaf.issues != null && (
-                          <span className="text-[10px] font-semibold text-rose-400/80 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20">{"⚠️"} {selectedLeaf.issues} active issues</span>
+                          <span className="text-[10px] font-semibold text-rose-400/80 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 inline-flex items-center gap-0.5"><AlertTriangle className="w-3 h-3" aria-hidden /> {selectedLeaf.issues} active issues</span>
                         )}
                       </div>
 
@@ -550,7 +554,7 @@ export default function DistrictGraph({ district, places = [], initialCat }: { d
                       </div>
                     </div>
 
-                    <button onClick={() => setLeafId(null)} aria-label="Close detail panel" className="shrink-0 text-kerala-muted hover:text-kerala-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-white/5 transition-colors text-sm mt-1 outline-none focus-visible:ring-2 focus-visible:ring-kerala-gold">{"✕"}</button>
+                    <button onClick={() => setLeafId(null)} aria-label="Close detail panel" className="shrink-0 text-kerala-muted hover:text-kerala-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-white/5 transition-colors text-sm mt-1 outline-none focus-visible:ring-2 focus-visible:ring-kerala-gold"><X className="w-4 h-4" /></button>
                   </div>
                 </div>
               )}
@@ -580,7 +584,7 @@ export default function DistrictGraph({ district, places = [], initialCat }: { d
               return (
                 <div key={cat.type} className="space-y-3" role="region" aria-label={m.label}>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">{m.icon}</span>
+                    {(() => { const I = TYPE_ICONS[cat.type] ?? MapPin; return <span style={{ color: m.hue }}><I className="w-5 h-5" aria-hidden="true" /></span>; })()}
                     <h3 className="font-semibold text-kerala-white text-sm">{m.label}</h3>
                     <span className="text-[10px] text-kerala-muted/50 font-medium">{cat.items.length}</span>
                   </div>
@@ -595,11 +599,11 @@ export default function DistrictGraph({ district, places = [], initialCat }: { d
                         <div className="p-3.5 space-y-2">
                           <div className="flex items-start justify-between gap-2">
                             <h4 className="font-newsreader font-semibold text-kerala-white text-sm leading-tight">{item.label}</h4>
-                            {item.emoji && <span className="text-base shrink-0">{item.emoji}</span>}
+                            {(() => { const I = TYPE_ICONS[cat.type]; return I ? <span className="shrink-0" style={{ color: m.hue }}><I className="w-4 h-4" aria-hidden="true" /></span> : null; })()}
                           </div>
                           {item.sub && <span className="text-[10px] font-malayalam text-kerala-muted/60 block">{item.sub}</span>}
                           {item.desc && <p className="text-xs text-kerala-muted/80 leading-relaxed line-clamp-3">{item.desc}</p>}
-                          {item.place?.address && <p className="text-[10px] text-kerala-muted/50">{"\u{1F4CD}"} {item.place.address}</p>}
+                          {item.place?.address && <p className="text-[10px] text-kerala-muted/50 flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5 inline shrink-0" aria-hidden /> {item.place.address}</p>}
                           {item.hl && item.hl.length > 0 && (
                             <div className="flex flex-wrap gap-1">
                               {item.hl.slice(0, 4).map((h) => (

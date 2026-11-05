@@ -1,38 +1,38 @@
 // Shared taxonomy for places & events (safe to import from client and server code).
 
 export const PLACE_CATEGORIES = [
-  { key: "school", label: "Schools", icon: "🏫" },
-  { key: "college", label: "Colleges & universities", icon: "🎓" },
-  { key: "library", label: "Libraries", icon: "📚" },
-  { key: "park", label: "Parks & gardens", icon: "🌳" },
-  { key: "zoo", label: "Zoos & wildlife", icon: "🦁" },
-  { key: "museum", label: "Museums & heritage", icon: "🖼️" },
-  { key: "sports_venue", label: "Stadiums & sports venues", icon: "🏟️" },
-  { key: "food", label: "Food & flavours", icon: "🍲" },
-  { key: "restaurant", label: "Famous restaurants", icon: "🍽️" },
-  { key: "culture", label: "Arts, crafts & traditions", icon: "🎭" },
-  { key: "nature", label: "Beaches, waterfalls & nature", icon: "🌊" },
-  { key: "hidden_gem", label: "Hidden gems", icon: "💎" },
-  { key: "other", label: "Other places", icon: "📍" },
+  { key: "school", label: "Schools", icon: "School" },
+  { key: "college", label: "Colleges & universities", icon: "GraduationCap" },
+  { key: "library", label: "Libraries", icon: "BookOpen" },
+  { key: "park", label: "Parks & gardens", icon: "TreePine" },
+  { key: "zoo", label: "Zoos & wildlife", icon: "Squirrel" },
+  { key: "museum", label: "Museums & heritage", icon: "Landmark" },
+  { key: "sports_venue", label: "Stadiums & sports venues", icon: "Trophy" },
+  { key: "food", label: "Food & flavours", icon: "UtensilsCrossed" },
+  { key: "restaurant", label: "Famous restaurants", icon: "Utensils" },
+  { key: "culture", label: "Arts, crafts & traditions", icon: "Palette" },
+  { key: "nature", label: "Beaches, waterfalls & nature", icon: "Waves" },
+  { key: "hidden_gem", label: "Hidden gems", icon: "Gem" },
+  { key: "other", label: "Other places", icon: "MapPin" },
 ] as const;
 export type PlaceCategory = (typeof PLACE_CATEGORIES)[number]["key"];
 
 export const EVENT_CATEGORIES = [
-  { key: "sports", label: "Sports", icon: "🏆" },
-  { key: "festival", label: "Festivals", icon: "🎆" },
-  { key: "culture", label: "Arts & culture", icon: "🎭" },
-  { key: "education", label: "Education", icon: "🎓" },
-  { key: "community", label: "Community", icon: "🤝" },
-  { key: "other", label: "Other events", icon: "📅" },
+  { key: "sports", label: "Sports", icon: "Trophy" },
+  { key: "festival", label: "Festivals", icon: "Sparkles" },
+  { key: "culture", label: "Arts & culture", icon: "Palette" },
+  { key: "education", label: "Education", icon: "GraduationCap" },
+  { key: "community", label: "Community", icon: "Users" },
+  { key: "other", label: "Other events", icon: "Calendar" },
 ] as const;
 export type EventCategory = (typeof EVENT_CATEGORIES)[number]["key"];
 
 export const SPORTS = [
-  { key: "football", label: "Football", icon: "⚽" },
-  { key: "cricket", label: "Cricket", icon: "🏏" },
-  { key: "boat_race", label: "Boat racing", icon: "🛶" },
-  { key: "athletics", label: "Athletics", icon: "🏃" },
-  { key: "other", label: "Other sports", icon: "🏅" },
+  { key: "football", label: "Football", icon: "Circle" },
+  { key: "cricket", label: "Cricket", icon: "Target" },
+  { key: "boat_race", label: "Boat racing", icon: "Ship" },
+  { key: "athletics", label: "Athletics", icon: "Timer" },
+  { key: "other", label: "Other sports", icon: "Medal" },
 ] as const;
 export type SportKey = (typeof SPORTS)[number]["key"];
 

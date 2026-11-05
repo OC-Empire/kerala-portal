@@ -8,6 +8,7 @@ import EventCard from "@/components/event-card";
 import NewsThumb from "@/components/news-thumb";
 import { timeAgo } from "@/lib/utils";
 import { archiveNews, queryArchive } from "@/lib/news-archive";
+import { Trophy } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Sports — Kerala Portal",
@@ -50,7 +51,10 @@ export default async function SportsPage({ searchParams }: { searchParams: Promi
   return (
     <div className="space-y-10">
       <header className="glass-card p-6 md:p-8 bg-gradient-to-br from-kerala-surface/70 to-kerala-card/80 border-kerala-green/30">
-        <h1 className="font-newsreader text-3xl md:text-4xl font-bold kerala-text-gradient">🏆 {t("title")}</h1>
+        <h1 className="font-newsreader text-3xl md:text-4xl font-bold kerala-text-gradient flex items-center gap-3">
+          <Trophy className="w-8 h-8 text-kerala-gold shrink-0" aria-hidden />
+          {t("title")}
+        </h1>
         <p className="text-sm md:text-base text-kerala-muted mt-2 max-w-2xl">{t("subtitle")}</p>
       </header>
 
@@ -111,7 +115,7 @@ export default async function SportsPage({ searchParams }: { searchParams: Promi
                 <div className="p-4 flex flex-col flex-1">
                   <div className="flex items-center gap-2 mb-1.5 text-[11px]">
                     <span className="px-2 py-0.5 rounded-full bg-kerala-green/20 text-emerald-300 font-semibold">
-                      {n.sport === "cricket" ? "🏏 Cricket" : n.sport === "football" ? "⚽ Football" : "🏅 Sports"}
+                      {n.sport === "cricket" ? "Cricket" : n.sport === "football" ? "Football" : "Sports"}
                     </span>
                     {n.lang === "ml" && <span className="px-1.5 py-0.5 rounded bg-kerala-gold/20 text-kerala-gold">മലയാളം</span>}
                     <span className="text-kerala-muted ml-auto">{timeAgo(n.publishedAt)}</span>

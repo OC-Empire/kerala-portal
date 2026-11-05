@@ -133,12 +133,16 @@
   .region-central { --region-color: #1B6B3A; }
   .region-north   { --region-color: #E8A020; }
 
-  /* Ticker */
+  /* Ticker — pauses on hover/focus for accessibility */
   .ticker-wrap {
     @apply overflow-hidden whitespace-nowrap;
   }
   .ticker-content {
     @apply inline-block animate-ticker;
+  }
+  .ticker-wrap:hover .ticker-content,
+  .ticker-wrap:focus-within .ticker-content {
+    animation-play-state: paused;
   }
 
   /* Backwater ripple SVG background */
@@ -151,4 +155,31 @@
 
 @layer utilities {
   .text-balance { text-wrap: balance; }
+}
+
+/* Accessibility: visible focus rings for keyboard navigation */
+:focus-visible {
+  outline: 3px solid var(--kerala-gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Accessibility: respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .ticker-content {
+    animation: none !important;
+  }
+  .glass-card-hover:hover {
+    transform: none;
+  }
+  .btn-primary:hover,
+  .btn-gold:hover {
+    transform: none;
+  }
 }

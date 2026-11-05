@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { Palmtree } from "lucide-react";
 import { getLiveNews, type Locale } from "@/lib/feeds";
 import { getCivicSummary } from "@/lib/civic-data";
 import { getWeather } from "@/lib/weather";
@@ -180,7 +181,7 @@ export default async function Home() {
 
       {/* Civic CTA */}
       <section className="glass-card p-6 border-kerala-gold/40 text-center space-y-2">
-        <div className="text-2xl">🌴</div>
+        <Palmtree className="w-7 h-7 text-kerala-green mx-auto" aria-hidden />
         <div className="text-sm font-bold text-kerala-white">{t("civicCardTitle")}</div>
         <p className="text-xs text-kerala-muted">{t("civicCardBody", { open: civic.openTotal })}</p>
         <Link href="/civic" className="btn-gold inline-block text-xs py-2 px-4 mt-2 font-semibold">{t("civicCardCta")}</Link>

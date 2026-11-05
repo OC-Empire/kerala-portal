@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { DISTRICTS } from "@/lib/districts";
 import { KERALA_GEO, KERALA_VIEWBOX } from "@/lib/kerala-geo";
 import { PLACE_CATEGORIES, eventMeta, sportMeta } from "@/lib/places";
+import { getIcon } from "@/lib/icons";
 import type { ExploreData } from "@/lib/explore-data";
 import { uncovered } from "@/lib/dedupe";
 
@@ -315,7 +316,7 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
                 onClick={() => setExCat(c.key)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeCat === c.key ? "bg-kerala-green text-white" : "bg-kerala-card text-kerala-muted hover:text-kerala-white"}`}
               >
-                {c.icon} {c.label} · {c.n}
+                {(() => { const I = getIcon(c.icon); return <I className="w-3.5 h-3.5 inline" aria-hidden />; })()} {c.label} · {c.n}
               </button>
             ))}
           </div>
@@ -326,7 +327,7 @@ export default function DistrictMap({ counts: storyCounts, headlines, civicCount
                   const m = e.category === "sports" ? sportMeta(e.sport) : eventMeta(e.category);
                   return (
                     <Link key={e.id} href={e.category === "sports" ? "/sports" : `/district/${d.slug}#events`} className="glass-card-hover p-4 block">
-                      <div className="text-[11px] text-kerala-gold font-semibold">{m.icon} {m.label}</div>
+                      <div className="text-[11px] text-kerala-gold font-semibold flex items-center gap-1">{(() => { const I = getIcon(m.icon); return <I className="w-3 h-3" aria-hidden />; })()} {m.label}</div>
                       <div className="font-newsreader text-base font-bold text-kerala-white mt-1 leading-snug">{locale === "ml" && e.malayalamTitle ? e.malayalamTitle : e.title}</div>
                       <div className="text-xs text-kerala-muted mt-1 line-clamp-2">{e.startsAt ? new Intl.DateTimeFormat(locale === "ml" ? "ml-IN" : "en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", year: "numeric" }).format(new Date(e.startsAt)) : e.dateNote ?? te("dateTbc")}</div>
                     </Link>

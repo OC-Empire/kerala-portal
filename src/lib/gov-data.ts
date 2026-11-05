@@ -6,43 +6,43 @@ export interface GovLink { title: string; desc: string; url: string; icon: strin
 export interface GovGroup { id: string; title: string; icon: string; items: GovLink[] }
 
 export const GOV_GROUPS: GovGroup[] = [
-  { id: "certificates", title: "Certificates & local government", icon: "📜", items: [
-    { title: "e-District Kerala", desc: "Apply online for revenue and other government certificates through the state's e-District project.", url: "https://edistrict.kerala.gov.in", icon: "📜", ok: true },
-    { title: "K-SMART", desc: "Local-body services in one place: birth, death and marriage registration, applications and complaint status, with 800+ services reported online.", url: "https://ksmart.lsgkerala.gov.in", icon: "🏛️", ok: true },
-    { title: "Akshaya centres", desc: "Common service centres that help with applications and online services for people who need assistance.", url: "https://akshaya.kerala.gov.in", icon: "🧑‍💻", ok: true },
-    { title: "Local Self Government Department", desc: "Panchayat, municipality and corporation portals, schemes and orders.", url: "https://lsgkerala.gov.in", icon: "🏘️", ok: true },
+  { id: "certificates", title: "Certificates & local government", icon: "ScrollText", items: [
+    { title: "e-District Kerala", desc: "Apply online for revenue and other government certificates through the state's e-District project.", url: "https://edistrict.kerala.gov.in", icon: "ScrollText", ok: true },
+    { title: "K-SMART", desc: "Local-body services in one place: birth, death and marriage registration, applications and complaint status, with 800+ services reported online.", url: "https://ksmart.lsgkerala.gov.in", icon: "Building2", ok: true },
+    { title: "Akshaya centres", desc: "Common service centres that help with applications and online services for people who need assistance.", url: "https://akshaya.kerala.gov.in", icon: "MonitorSmartphone", ok: true },
+    { title: "Local Self Government Department", desc: "Panchayat, municipality and corporation portals, schemes and orders.", url: "https://lsgkerala.gov.in", icon: "Home", ok: true },
   ]},
-  { id: "benefits", title: "Ration card, pensions & benefits", icon: "🍚", items: [
-    { title: "Civil Supplies (ration card)", desc: "E-services for ration cards from the Civil Supplies Department. Aadhaar linking is required to receive ration.", url: "https://civilsupplieskerala.gov.in", icon: "🍚", ok: false },
-    { title: "Welfare pensions", desc: "Social security and welfare pension information and status through the local-government pension portal.", url: "https://welfarepension.lsgkerala.gov.in", icon: "💰", ok: true },
-    { title: "State Health Agency", desc: "Runs Kerala's publicly funded health-insurance schemes, including the Karunya Arogya Suraksha Padhathi.", url: "https://sha.kerala.gov.in", icon: "🏥", ok: true },
-    { title: "Health Services", desc: "Directorate of Health Services: government hospitals, programmes and notices.", url: "https://dhs.kerala.gov.in", icon: "⚕️", ok: true },
+  { id: "benefits", title: "Ration card, pensions & benefits", icon: "Wheat", items: [
+    { title: "Civil Supplies (ration card)", desc: "E-services for ration cards from the Civil Supplies Department. Aadhaar linking is required to receive ration.", url: "https://civilsupplieskerala.gov.in", icon: "Wheat", ok: false },
+    { title: "Welfare pensions", desc: "Social security and welfare pension information and status through the local-government pension portal.", url: "https://welfarepension.lsgkerala.gov.in", icon: "Coins", ok: true },
+    { title: "State Health Agency", desc: "Runs Kerala's publicly funded health-insurance schemes, including the Karunya Arogya Suraksha Padhathi.", url: "https://sha.kerala.gov.in", icon: "Hospital", ok: true },
+    { title: "Health Services", desc: "Directorate of Health Services: government hospitals, programmes and notices.", url: "https://dhs.kerala.gov.in", icon: "Stethoscope", ok: true },
   ]},
-  { id: "land", title: "Land & property", icon: "🗺️", items: [
-    { title: "Ente Bhoomi", desc: "The integrated land-records and digital survey portal of the Survey and Land Records Department.", url: "https://entebhoomi.kerala.gov.in", icon: "🗺️", ok: true },
-    { title: "ReLIS (Revenue land information)", desc: "Revenue Department's land information system for land-tax and records.", url: "https://relis.kerala.gov.in", icon: "📑", ok: false },
-    { title: "Registration Department", desc: "Property registration, encumbrance and guideline-value services.", url: "https://keralaregistration.gov.in", icon: "🏠", ok: false },
+  { id: "land", title: "Land & property", icon: "Map", items: [
+    { title: "Ente Bhoomi", desc: "The integrated land-records and digital survey portal of the Survey and Land Records Department.", url: "https://entebhoomi.kerala.gov.in", icon: "Map", ok: true },
+    { title: "ReLIS (Revenue land information)", desc: "Revenue Department's land information system for land-tax and records.", url: "https://relis.kerala.gov.in", icon: "FileText", ok: false },
+    { title: "Registration Department", desc: "Property registration, encumbrance and guideline-value services.", url: "https://keralaregistration.gov.in", icon: "Home", ok: false },
   ]},
-  { id: "utilities", title: "Electricity, water & transport", icon: "💡", items: [
-    { title: "KSEB self-service", desc: "Pay bills, apply for connections and register electricity complaints.", url: "https://wss.kseb.in", icon: "💡", ok: true },
-    { title: "Kerala Water Authority", desc: "Water bills, new connections and complaints.", url: "https://kwa.kerala.gov.in", icon: "🚰", ok: true },
-    { title: "Parivahan (transport)", desc: "Driving licence, vehicle registration and other transport services from the Ministry of Road Transport.", url: "https://parivahan.gov.in", icon: "🚗", ok: true },
-    { title: "Sarathi (driving licence)", desc: "Learner's and driving licence services.", url: "https://sarathi.parivahan.gov.in/sarathiservice/", icon: "🪪", ok: true },
+  { id: "utilities", title: "Electricity, water & transport", icon: "Lightbulb", items: [
+    { title: "KSEB self-service", desc: "Pay bills, apply for connections and register electricity complaints.", url: "https://wss.kseb.in", icon: "Lightbulb", ok: true },
+    { title: "Kerala Water Authority", desc: "Water bills, new connections and complaints.", url: "https://kwa.kerala.gov.in", icon: "Droplets", ok: true },
+    { title: "Parivahan (transport)", desc: "Driving licence, vehicle registration and other transport services from the Ministry of Road Transport.", url: "https://parivahan.gov.in", icon: "Car", ok: true },
+    { title: "Sarathi (driving licence)", desc: "Learner's and driving licence services.", url: "https://sarathi.parivahan.gov.in/sarathiservice/", icon: "CreditCard", ok: true },
   ]},
-  { id: "jobs", title: "Jobs & exams", icon: "🎓", items: [
-    { title: "Kerala PSC", desc: "Public Service Commission notifications, applications, results and your profile.", url: "https://www.keralapsc.gov.in", icon: "📋", ok: true },
-    { title: "Employment services", desc: "Employment Exchange and job-seeker registration.", url: "https://employment.kerala.gov.in", icon: "💼", ok: true },
+  { id: "jobs", title: "Jobs & exams", icon: "GraduationCap", items: [
+    { title: "Kerala PSC", desc: "Public Service Commission notifications, applications, results and your profile.", url: "https://www.keralapsc.gov.in", icon: "ClipboardList", ok: true },
+    { title: "Employment services", desc: "Employment Exchange and job-seeker registration.", url: "https://employment.kerala.gov.in", icon: "Briefcase", ok: true },
   ]},
-  { id: "safety", title: "Police, safety & disasters", icon: "🚓", items: [
-    { title: "Kerala Police", desc: "Police services, notices and information.", url: "https://keralapolice.gov.in", icon: "🚓", ok: true },
-    { title: "Thuna (police online services)", desc: "Citizen portal for online police services.", url: "https://thuna.keralapolice.gov.in", icon: "🛡️", ok: true },
-    { title: "Kerala State Disaster Management Authority", desc: "Alerts, advisories and control-room information for floods, landslides and other hazards.", url: "https://sdma.kerala.gov.in", icon: "🌧️", ok: true },
+  { id: "safety", title: "Police, safety & disasters", icon: "Shield", items: [
+    { title: "Kerala Police", desc: "Police services, notices and information.", url: "https://keralapolice.gov.in", icon: "Shield", ok: true },
+    { title: "Thuna (police online services)", desc: "Citizen portal for online police services.", url: "https://thuna.keralapolice.gov.in", icon: "ShieldAlert", ok: true },
+    { title: "Kerala State Disaster Management Authority", desc: "Alerts, advisories and control-room information for floods, landslides and other hazards.", url: "https://sdma.kerala.gov.in", icon: "CloudRain", ok: true },
   ]},
-  { id: "grievance", title: "Grievances & right to information", icon: "📢", items: [
-    { title: "Chief Minister's Office", desc: "The Chief Minister's office portal, including the public grievance route.", url: "https://cmo.kerala.gov.in", icon: "📢", ok: true },
-    { title: "CPGRAMS (central grievances)", desc: "The Government of India's public grievance portal, for central departments.", url: "https://pgportal.gov.in", icon: "📨", ok: true },
-    { title: "RTI Kerala", desc: "File Right to Information requests to Kerala government departments.", url: "https://rtiportal.kerala.gov.in", icon: "🔎", ok: true },
-    { title: "Kerala government portal", desc: "The state's main portal with department links and orders.", url: "https://www.kerala.gov.in", icon: "🌐", ok: true },
+  { id: "grievance", title: "Grievances & right to information", icon: "Megaphone", items: [
+    { title: "Chief Minister's Office", desc: "The Chief Minister's office portal, including the public grievance route.", url: "https://cmo.kerala.gov.in", icon: "Megaphone", ok: true },
+    { title: "CPGRAMS (central grievances)", desc: "The Government of India's public grievance portal, for central departments.", url: "https://pgportal.gov.in", icon: "Mail", ok: true },
+    { title: "RTI Kerala", desc: "File Right to Information requests to Kerala government departments.", url: "https://rtiportal.kerala.gov.in", icon: "Search", ok: true },
+    { title: "Kerala government portal", desc: "The state's main portal with department links and orders.", url: "https://www.kerala.gov.in", icon: "Globe", ok: true },
   ]},
 ];
 
@@ -62,11 +62,11 @@ export const HELPLINES: Helpline[] = [
 
 export interface NriLink { title: string; desc: string; url: string; icon: string; ok: boolean }
 export const NRI_LINKS: NriLink[] = [
-  { title: "NORKA Roots", desc: "Kerala's agency for non-resident Keralites: the Pravasi ID card, insurance, migration support and welfare services.", url: "https://norkaroots.org", icon: "🌍", ok: true },
-  { title: "NORKA ID card & insurance", desc: "The Pravasi ID card is valid for 3 years and includes accident cover. Fees and cover amounts have changed over time, so check the portal for the current figures.", url: "https://norkaroots.org/nrk-id-card", icon: "🪪", ok: true },
-  { title: "Kerala Pravasi Welfare Board", desc: "Membership and the Pravasi pension scheme for non-resident Keralites aged roughly 18 to 60, under the NRK Welfare Act, 2008. Pension amounts differ by category, so confirm on the Board's site.", url: "https://pravasikerala.org/eng", icon: "💰", ok: true },
-  { title: "eMigrate (Government of India)", desc: "The Ministry of External Affairs' system for emigration clearance and recruiting-agent checks, relevant before taking a job overseas.", url: "https://emigrate.gov.in", icon: "✈️", ok: true },
-  { title: "MADAD (consular grievances)", desc: "The Ministry of External Affairs' portal for consular help and grievances from Indians abroad.", url: "https://madad.gov.in", icon: "🤝", ok: false },
+  { title: "NORKA Roots", desc: "Kerala's agency for non-resident Keralites: the Pravasi ID card, insurance, migration support and welfare services.", url: "https://norkaroots.org", icon: "Globe", ok: true },
+  { title: "NORKA ID card & insurance", desc: "The Pravasi ID card is valid for 3 years and includes accident cover. Fees and cover amounts have changed over time, so check the portal for the current figures.", url: "https://norkaroots.org/nrk-id-card", icon: "CreditCard", ok: true },
+  { title: "Kerala Pravasi Welfare Board", desc: "Membership and the Pravasi pension scheme for non-resident Keralites aged roughly 18 to 60, under the NRK Welfare Act, 2008. Pension amounts differ by category, so confirm on the Board's site.", url: "https://pravasikerala.org/eng", icon: "Coins", ok: true },
+  { title: "eMigrate (Government of India)", desc: "The Ministry of External Affairs' system for emigration clearance and recruiting-agent checks, relevant before taking a job overseas.", url: "https://emigrate.gov.in", icon: "Plane", ok: true },
+  { title: "MADAD (consular grievances)", desc: "The Ministry of External Affairs' portal for consular help and grievances from Indians abroad.", url: "https://madad.gov.in", icon: "Handshake", ok: false },
 ];
 export const NRI_HELPLINES: Helpline[] = [
   { label: "NORKA global contact centre (toll-free, India)", number: "1800 425 3939" },
@@ -76,11 +76,11 @@ export const NRI_HELPLINES: Helpline[] = [
 
 export interface Authority { id: string; issue: string; icon: string; who: string; how: string; url?: string; number?: string; ok?: boolean }
 export const CIVIC_AUTHORITIES: Authority[] = [
-  { id: "roads", issue: "Potholes, roads & bridges", icon: "🚧", who: "Your panchayat, municipality or corporation for local roads. The Public Works Department for state roads and bridges.", how: "Use K-SMART's complaint option for local-body roads, or contact the PWD office for state roads.", url: "https://www.pwd.kerala.gov.in", ok: true },
-  { id: "water", issue: "Drinking water & pipelines", icon: "💧", who: "Kerala Water Authority.", how: "Call the helpline or use the KWA site to register a complaint.", url: "https://kwa.kerala.gov.in", number: "1916", ok: true },
-  { id: "electricity", issue: "Power cuts & street lights", icon: "⚡", who: "KSEB for power supply. The local body for street lights.", how: "Call 1912 (24x7) or use KSEB's self-service site.", url: "https://wss.kseb.in", number: "1912", ok: true },
-  { id: "sanitation", issue: "Waste, sanitation & drains", icon: "🗑️", who: "Your local body, with the Haritha Keralam Mission supporting waste management.", how: "Register the complaint on K-SMART or with your ward member or health inspector.", url: "https://ksmart.lsgkerala.gov.in", ok: true },
-  { id: "safety", issue: "Safety, crime & women's safety", icon: "🚨", who: "Kerala Police.", how: "Dial 112 in an emergency. For women, 181. Non-urgent services are on the Thuna portal.", url: "https://thuna.keralapolice.gov.in", number: "112", ok: true },
-  { id: "disaster", issue: "Floods, landslides & disasters", icon: "🌧️", who: "District disaster control rooms and the State Disaster Management Authority.", how: "Call 1077 (district) or 1070 (state) and check SDMA alerts.", url: "https://sdma.kerala.gov.in", number: "1077", ok: true },
-  { id: "general", issue: "Anything else, or no response yet", icon: "📢", who: "The Chief Minister's Office portal, the citizen call centre, or the central CPGRAMS portal.", how: "Escalate to the CM's portal, call 155300, or file on CPGRAMS if the issue involves a central department.", url: "https://cmo.kerala.gov.in", number: "155300", ok: true },
+  { id: "roads", issue: "Potholes, roads & bridges", icon: "Construction", who: "Your panchayat, municipality or corporation for local roads. The Public Works Department for state roads and bridges.", how: "Use K-SMART's complaint option for local-body roads, or contact the PWD office for state roads.", url: "https://www.pwd.kerala.gov.in", ok: true },
+  { id: "water", issue: "Drinking water & pipelines", icon: "Droplets", who: "Kerala Water Authority.", how: "Call the helpline or use the KWA site to register a complaint.", url: "https://kwa.kerala.gov.in", number: "1916", ok: true },
+  { id: "electricity", issue: "Power cuts & street lights", icon: "Zap", who: "KSEB for power supply. The local body for street lights.", how: "Call 1912 (24x7) or use KSEB's self-service site.", url: "https://wss.kseb.in", number: "1912", ok: true },
+  { id: "sanitation", issue: "Waste, sanitation & drains", icon: "Trash2", who: "Your local body, with the Haritha Keralam Mission supporting waste management.", how: "Register the complaint on K-SMART or with your ward member or health inspector.", url: "https://ksmart.lsgkerala.gov.in", ok: true },
+  { id: "safety", issue: "Safety, crime & women's safety", icon: "ShieldAlert", who: "Kerala Police.", how: "Dial 112 in an emergency. For women, 181. Non-urgent services are on the Thuna portal.", url: "https://thuna.keralapolice.gov.in", number: "112", ok: true },
+  { id: "disaster", issue: "Floods, landslides & disasters", icon: "CloudRain", who: "District disaster control rooms and the State Disaster Management Authority.", how: "Call 1077 (district) or 1070 (state) and check SDMA alerts.", url: "https://sdma.kerala.gov.in", number: "1077", ok: true },
+  { id: "general", issue: "Anything else, or no response yet", icon: "Megaphone", who: "The Chief Minister's Office portal, the citizen call centre, or the central CPGRAMS portal.", how: "Escalate to the CM's portal, call 155300, or file on CPGRAMS if the issue involves a central department.", url: "https://cmo.kerala.gov.in", number: "155300", ok: true },
 ];

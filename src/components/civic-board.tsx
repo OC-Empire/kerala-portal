@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { DISTRICTS } from "@/lib/districts";
+import { Construction, Droplets, Zap, Trash2, ShieldAlert, MapPin, Megaphone, Palmtree, X, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 
 interface Issue {
   id: string;
@@ -15,13 +16,13 @@ interface Issue {
   createdAt?: string;
 }
 
-const CATEGORY_ICONS: Record<string, string> = {
-  roads: "🚧 Roads & Transport",
-  water: "💧 Water Supply",
-  electricity: "⚡ Power & Lighting",
-  sanitation: "🗑️ Sanitation & Waste",
-  safety: "🚨 Public Safety",
-  other: "📌 General Civic",
+const CATEGORY_META: Record<string, { icon: React.ComponentType<{ className?: string }>; label: string }> = {
+  roads: { icon: Construction, label: "Roads & Transport" },
+  water: { icon: Droplets, label: "Water Supply" },
+  electricity: { icon: Zap, label: "Power & Lighting" },
+  sanitation: { icon: Trash2, label: "Sanitation & Waste" },
+  safety: { icon: ShieldAlert, label: "Public Safety" },
+  other: { icon: MapPin, label: "General Civic" },
 };
 
 export default function CivicBoard() {
@@ -137,7 +138,7 @@ export default function CivicBoard() {
           onClick={() => setShowModal(true)}
           className="btn-gold whitespace-nowrap self-start md:self-center flex items-center gap-2 shadow-gold"
         >
-          <span>📢</span> Report New Issue
+          <Megaphone className="w-4 h-4" aria-hidden /> Report New Issue
         </button>
       </div>
 
@@ -150,7 +151,7 @@ export default function CivicBoard() {
             onChange={(e) => setSelectedDistrict(e.target.value)}
             className="w-full bg-kerala-card border border-kerala-border rounded-xl px-3 py-2 text-sm text-kerala-white outline-none focus:border-kerala-green"
           >
-            <option value="all">🌴 All 14 Districts</option>
+            <option value="all">All 14 Districts</option>
             {DISTRICTS.map((d) => (
               <option key={d.slug} value={d.slug}>
                 {d.name} ({d.malayalamName})
@@ -166,8 +167,8 @@ export default function CivicBoard() {
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="w-full bg-kerala-card border border-kerala-border rounded-xl px-3 py-2 text-sm text-kerala-white outline-none focus:border-kerala-green"
           >
-            <option value="all">⚡ All Categories</option>
-            {Object.entries(CATEGORY_ICONS).map(([key, label]) => (
+            <option value="all">All Categories</option>
+            {Object.entries(CATEGORY_META).map(([key, { label }]) => (
               <option key={key} value={key}>
                 {label}
               </option>
@@ -190,7 +191,7 @@ export default function CivicBoard() {
         {!loading && !loadError && filtered.length === 0 && (
           issues.length === 0 ? (
             <div className="glass-card p-6 text-center space-y-2">
-              <div className="text-3xl" aria-hidden>🌴</div>
+              <Palmtree className="w-8 h-8 text-kerala-green mx-auto" aria-hidden />
               <p className="text-sm text-kerala-white font-semibold">No citizen reports yet.</p>
               <p className="text-sm text-kerala-muted">Be the first to report a problem in your area. To get something fixed, also contact the responsible department. The directory below shows who.</p>
             </div>
@@ -207,11 +208,11 @@ export default function CivicBoard() {
             >
               <div className="flex-1 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-kerala-border text-kerala-white font-medium">
-                    {CATEGORY_ICONS[item.category] || "📌 Issue"}
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-kerala-border text-kerala-white font-medium inline-flex items-center gap-1">
+                    {(() => { const meta = CATEGORY_META[item.category]; const CatIcon = meta?.icon ?? MapPin; return <><CatIcon className="w-3 h-3" aria-hidden /> {meta?.label ?? "Issue"}</>; })()}
                   </span>
-                  <span className="text-xs text-kerala-gold font-medium">
-                    📍 {item.subLocation || item.district}
+                  <span className="text-xs text-kerala-gold font-medium inline-flex items-center gap-1">
+                    <MapPin className="w-3 h-3" aria-hidden /> {item.subLocation || item.district}
                   </span>
                   {/^iss-\d{1,3}$/.test(item.id) && (
                     <span title="Example report that came with the site, not from a citizen" className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border border-kerala-border text-kerala-muted">Sample</span>
@@ -225,7 +226,7 @@ export default function CivicBoard() {
                         : "bg-rose-900/40 text-rose-300 border border-rose-700/50"
                     }`}
                   >
-                    {item.status === "resolved" ? "✓ Resolved" : item.status === "in-progress" ? "⏳ In Progress" : "⚠️ Open"}
+                    {item.status === "resolved" ? <><CheckCircle2 className="w-3 h-3 inline" aria-hidden /> Resolved</> : item.status === "in-progress" ? <><Clock className="w-3 h-3 inline" aria-hidden /> In Progress</> : <><AlertTriangle className="w-3 h-3 inline" aria-hidden /> Open</>}
                   </span>
                 </div>
 
@@ -266,10 +267,10 @@ export default function CivicBoard() {
               onClick={() => setShowModal(false)}
               className="absolute top-4 right-4 text-kerala-muted hover:text-kerala-white text-lg"
             >
-              ✕
+              <X className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-2xl">📢</span>
+              <Megaphone className="w-7 h-7 text-kerala-gold" aria-hidden />
               <h3 className="font-newsreader text-2xl font-bold text-kerala-white">
                 Report a Civic Grievance
               </h3>
@@ -315,7 +316,7 @@ export default function CivicBoard() {
                     onChange={(e) => setFormCat(e.target.value)}
                     className="w-full bg-kerala-dark border border-kerala-border rounded-xl px-3 py-2 text-sm text-kerala-white outline-none focus:border-kerala-gold"
                   >
-                    {Object.entries(CATEGORY_ICONS).map(([key, label]) => (
+                    {Object.entries(CATEGORY_META).map(([key, { label }]) => (
                       <option key={key} value={key}>
                         {label}
                       </option>

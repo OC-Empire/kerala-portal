@@ -2,8 +2,10 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { DISTRICT_BY_SLUG } from "@/lib/districts";
 import { eventMeta, sportMeta } from "@/lib/places";
+import { getIcon } from "@/lib/icons";
 import { safeHref } from "@/lib/safe-url";
 import type { EventItem } from "@/lib/events-data";
+import { MapPin, Calendar as CalendarIcon, Landmark as VenueIcon } from "lucide-react";
 
 const TZ = "Asia/Kolkata";
 
@@ -40,7 +42,7 @@ export default function EventCard({ event: e }: { event: EventItem }) {
           </>
         ) : (
           <>
-            <div className="text-xl leading-none">📅</div>
+            <CalendarIcon className="w-5 h-5 text-kerala-gold mx-auto" aria-hidden />
             <div className="text-[10px] uppercase text-kerala-muted mt-1">{t("tbc")}</div>
           </>
         )}
@@ -48,20 +50,20 @@ export default function EventCard({ event: e }: { event: EventItem }) {
 
       <div className="min-w-0 space-y-1.5">
         <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-          <span className="px-2 py-0.5 rounded-full bg-kerala-green/20 text-emerald-300 font-semibold">
-            {sport ? `${sport.icon} ${sport.label}` : `${cat.icon} ${cat.label}`}
+          <span className="px-2 py-0.5 rounded-full bg-kerala-green/20 text-emerald-300 font-semibold inline-flex items-center gap-1">
+            {(() => { const m = sport ?? cat; const I = getIcon(m.icon); return <><I className="w-3 h-3" aria-hidden /> {m.label}</>; })()}
           </span>
           {district ? (
-            <Link href={`/district/${district.slug}`} className="text-kerala-gold hover:underline">📍 {district.name}</Link>
+            <Link href={`/district/${district.slug}`} className="text-kerala-gold hover:underline inline-flex items-center gap-0.5"><MapPin className="w-3 h-3" aria-hidden /> {district.name}</Link>
           ) : (
-            <span className="text-kerala-muted">📍 {t("statewide")}</span>
+            <span className="text-kerala-muted inline-flex items-center gap-0.5"><MapPin className="w-3 h-3" aria-hidden /> {t("statewide")}</span>
           )}
           {e.status === "cancelled" && <span className="px-2 py-0.5 rounded-full bg-rose-900/40 text-rose-300">{t("cancelled")}</span>}
         </div>
 
         <h3 className="font-newsreader text-lg font-bold text-kerala-white leading-snug">{title}</h3>
         <div className="text-xs text-kerala-gold">{when}</div>
-        {e.venue && <div className="text-xs text-kerala-muted">🏟️ {e.venue}</div>}
+        {e.venue && <div className="text-xs text-kerala-muted flex items-center gap-1"><VenueIcon className="w-3 h-3" aria-hidden /> {e.venue}</div>}
         {e.description && <p className="text-sm text-kerala-muted leading-relaxed line-clamp-3">{e.description}</p>}
 
         <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
