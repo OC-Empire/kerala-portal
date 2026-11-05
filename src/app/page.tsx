@@ -8,7 +8,6 @@ import { getCivicSummary } from "@/lib/civic-data";
 import { getWeather } from "@/lib/weather";
 import { getExploreData } from "@/lib/explore-data";
 import DistrictMap from "@/components/district-map";
-import LatestNews from "@/components/latest-news";
 import NewsFlow from "@/components/news-flow";
 import WeatherOrbit from "@/components/weather-orbit";
 import AnimatedKPI from "@/components/animated-kpi";
@@ -135,9 +134,8 @@ export default async function Home() {
       {/* Map */}
       <DistrictMap counts={counts} headlines={headlines} civicCounts={civic.openByDistrict} civicTop={civic.topByDistrict} explore={explore} />
 
-      {/* Live news — featured + timeline flow */}
-      <LatestNews items={news} />
-      <NewsFlow items={news.slice(5)} heading={t("newsFlowHeading") ?? "Live Feed"} cta={t("viewAllNews")} />
+      {/* Live news timeline */}
+      <NewsFlow items={news} heading={t("newsFlowHeading") ?? "Live Feed"} cta={t("viewAllNews")} />
 
       {/* Weather orbit */}
       <WeatherOrbit />
